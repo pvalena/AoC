@@ -6,8 +6,8 @@ require 'ap'
 alias :p :pp
 
 class RL
-  #DEB = false
-  DEB = true
+  DEB = false
+  #DEB = true
 
   # export RUBY_THREAD_VM_STACK_SIZE=15000000
   # ulimit -s 2097024
@@ -45,18 +45,26 @@ class RL
     #e res(0,0), res(@s.size,@s.size), res(@s.size-1,@s.size-1), res(@s.size-2,@s.size-2)
 
     gn
+    gn
 
     @i.times {
       |n|
 
       d :run, n
 
-      run
+      run n
     }
 
-    trim
+    100.times {
+      trim @s, 1 unless sid
+    }
 
-    pa
+    begin
+      trim
+      trim
+    rescue
+      dss :trm, @s.size, @s[0].size, false
+    end
 
     fin
   end
@@ -115,8 +123,8 @@ class RL
     @s << l if bottom
   end
 
-  def run
-    10.times { bor }
+  def run n
+    #10.times { bor }
 
     @s = \
     @s.each_with_index.map {
@@ -188,6 +196,10 @@ class RL
     }
 
     d :z, @z
+
+    pa o: true
+
+    @z
   end
 
 
