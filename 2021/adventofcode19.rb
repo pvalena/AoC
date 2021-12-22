@@ -44,7 +44,7 @@ class RL
         @s[s][0] << l.map { |z| z.to_i }
       }
 
-    @d = Hash.new([])
+    @l = []
 
     @b = dc @s #.shuffle
 
@@ -158,6 +158,8 @@ class RL
 
             sin j, r, z
 
+            @l << z
+
             ass :com, @s[j].size == 1 # @s[j][0], false
           end
         }
@@ -260,13 +262,8 @@ class RL
     v.map! {
       |w|
 
-      q = [w[0] + z[0], w[1] + z[1], w[2] + z[2]]
-
-     # puts pr(q)
-
-      q
+      [w[0] + z[0], w[1] + z[1], w[2] + z[2]]
     }
-    #puts
 
     @s[j] = [v]
   end
@@ -283,57 +280,24 @@ class RL
     } - [nil]
   end
 
-  def con a, b
-    d :con, a, b
+  def dst s = @l
+    @d = []
 
-    c = \
-    @d.map {
-      |k, v|
+    s.each_with_index {
+      |a, i|
 
-      if v.size > 1
-        v = \
-        v.select {
-          |z|
+      s[(i+1)..].each {
+        |b|
 
-          [a, b].include? z[0]
-        }
-
-        v if v.size > 1
-      end
-
-    } - [nil]
-
-    c.sort.uniq
-  end
-
-  def dst n
-    @s[n].each {
-      |s|
-
-      s.each_with_index {
-        |a, i|
-
-        s[(i+1)..].each_with_index {
-          |b, j|
-
-          c = \
-            a.each_with_index.map {
-              |x, k|
-              (x - b[k]).abs
-            }
-
-          3.times {
-            |x|
-            r = c.rotate(x)
-
-            if c.min == r[0]
-              v = [n, i, i+j]
-              @d[r] += [v] unless @d[r].include? v
-            end
-          }
+        @d << \
+        (0..2).inject(0) {
+          |x, k|
+          x + (a[k] - b[k]).abs
         }
       }
     }
+
+    @d
   end
 
   def fin
@@ -375,7 +339,10 @@ class RL
 
     d :z, r.size, l.nil?, o: true
 
-    @z = r.size
+    dst
+    d :d, @d.size, @d.max, o: true
+
+    @z = @d.max
   end
 
   def mar a = @s
