@@ -43,11 +43,17 @@ def inp n = true, &b
     } - [nil]
 end
 
-# Tally array, per elements size
-def tal s
+# Tally array, per elements size; or block
+def tal s, &b
   s.map {
     |v|
-    v.size
+    if b
+      yield v
+
+    else
+      v.size
+
+    end
 
   }.tally
 end
@@ -154,7 +160,7 @@ end
 # o: override DEB output
 # block to modify printed value
 # or compare to E => spc
-def pra a, o: false, &b
+def pra a, d = 2, o: false, &b
   return unless DEB or o
 
   s = 2
@@ -187,7 +193,7 @@ def pra a, o: false, &b
       |z|
       y = z.to_s
 
-      spc (y.size > 1 ? 1 : 2)
+      spc d - y.size
 
       if b
         print yield z, y
@@ -407,10 +413,35 @@ end
 
 # Are indexes $2,$3 inside array $1
 def bor s, i, j
-  i > 0 && j > 0                \
-    && i < (s.size-1)           \
-    && j < (s[i].size-1)
+  i >= 0 && j >= 0           \
+    && i < s.size            \
+    && j < s[i].size
 end
+
+# Lookup around array $1, check block
+def rou z, i, j, &b
+  c = 0
+
+  -1.upto(1).each {
+    |a|
+    x = i + a
+
+    -1.upto(1).each {
+      |b|
+      y = j + b
+
+      next unless [a, b] != [0, 0] \
+          && bor(z, x, y)
+
+      c += 1 if yield z[x][y], a, b
+
+    } if z[x]
+
+  }
+
+  c
+end
+
 
 # Runs `any?` on array $1,
 # checking only n $2 starting and ending elements.
