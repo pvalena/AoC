@@ -407,7 +407,7 @@ end
 def sum s
   s.map {
     |a|
-    a.values.reduce(:+)
+    a.values.sum
   }
 end
 
