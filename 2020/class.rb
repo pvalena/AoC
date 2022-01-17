@@ -249,12 +249,15 @@ def dcl a
 end
 
 # Length-1 symbols from a string
-def sym x
+# Optionally override processing via block
+def sym x, &b
   x = \
   x.split('')
    .map! {
     |z|
-    z.to_sym
+    r = yield z if b
+
+    r ? r : z.to_sym
   }
 
   if x.size == 1
