@@ -19,6 +19,9 @@ E = 9999999
 # Input ARGF; process block per element in a line
 # Skip empty lines? $1
 def inp n = true, &b
+
+  puts if DEB
+
   ARGF
     .readlines
     .map {
@@ -518,13 +521,25 @@ end
 # In array $1, swap entries $2 and $3
 def swp a, f, s
   (a[f], a[s]) = [a[s], a[f]]
+
 end
 
+# Print result $1
 def res r
   puts
   puts "\n=> " + r.to_s
 end
 
+# Get commandline arg
 def arg
   ARGV.pop.to_i
+end
+
+# Create hash-based cache via block
+def hsh
+  Hash.new {
+    |h, i|
+
+    h[i] = yield i
+  }
 end
