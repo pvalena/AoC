@@ -172,8 +172,9 @@ def pra a, d = 2, o: false, &b
   a[0].size.times {
     |i|
 
-    spc (s-1)
-    print i.to_s
+    i = i.to_s
+    spc d - i.size
+    print i
   }
   puts
 
@@ -181,7 +182,8 @@ def pra a, d = 2, o: false, &b
   a[0].size.times {
     |i|
 
-    spc s-1
+    i = i.to_s
+    spc d - 1
     print "─"
   }
   puts
@@ -264,7 +266,8 @@ def to_i a
 end
 
 # Convert values in nested arrays $1 `.to_s`
-def to_s a
+# Optionally handle by block
+def to_s a, &b
   a.map {
     |v|
 
@@ -272,8 +275,9 @@ def to_s a
       to_s v
 
     else
-      v.to_s
+      r = yield v if b
 
+      r ? r : v.to_s
     end
   }
 end
