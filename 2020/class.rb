@@ -263,6 +263,21 @@ def to_i a
   }
 end
 
+# Convert values in nested arrays $1 `.to_s`
+def to_s a
+  a.map {
+    |v|
+
+    if v.respond_to?(:map)
+      to_s v
+
+    else
+      v.to_s
+
+    end
+  }
+end
+
 # Length-1 symbols from a string
 # Optionally override processing via block
 def sym x, &b
@@ -559,5 +574,13 @@ def hsh
     |h, i|
 
     h[i] = yield i
+  }
+end
+
+# Multiplicate all elements of array
+def mul a
+  a.inject(1) {
+    |x, k|
+    x * k
   }
 end
