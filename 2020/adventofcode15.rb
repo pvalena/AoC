@@ -4,6 +4,9 @@ require_relative 'class'
 
 class R
   def initialize
+    # arg
+    @l = arg
+
     # data
     a = \
       inp {
@@ -26,15 +29,15 @@ class R
     @h = h
   end
 
-  def run h = @h, n = @n
+  def run h = @h, n = @n, l = @l
 
     # init
     t = h.size + 1
 
-    deb :run, t, h, h.size, n
+    dss :run, t, h, h.size, n, l
 
     # loop
-    while t < 2020
+    while t < l
       n = nex t, h, n
 
       t += 1
@@ -53,7 +56,7 @@ class R
 
     n = v ? t - v : 0
 
-    deb :nex, t+1, c, v, '->', n, h
+    #deb :nex, t+1, c, v, '->', n, h
 
     n
   end
