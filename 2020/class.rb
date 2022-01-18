@@ -248,6 +248,21 @@ def dcl a
   b
 end
 
+# Convert values in nested arrays $1 `.to_i`
+def to_i a
+  a.map {
+    |v|
+
+    if v.respond_to?(:map)
+      to_i v
+
+    else
+      v.to_i
+
+    end
+  }
+end
+
 # Length-1 symbols from a string
 # Optionally override processing via block
 def sym x, &b
