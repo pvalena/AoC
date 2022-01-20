@@ -57,7 +57,7 @@ class R
       ass :ws, i, w, w.size, [1, 2, 3, 5].include?(w.size) \
         unless i == 0
 
-      w = w.first if w.size == 1
+      w = w.first if w.size == 1 && w.first.kind_of?(String)
 
       h[i] = w
     }
