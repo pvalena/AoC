@@ -15,6 +15,8 @@ class R
   def pr z = @z
     pra(z){
       |a, b|
+
+      b = \
       case a
         when :L
           b.blue
@@ -25,6 +27,8 @@ class R
         else
           ' '
       end
+
+      [a, b]
     }
   end
 

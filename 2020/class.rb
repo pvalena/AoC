@@ -159,7 +159,7 @@ def opt f, a
   n
 end
 
-# Print array $1 nicely
+# Print 2d-array $1 nicely
 # o: override DEB output
 # block to modify printed value
 # or compare to E => spc
@@ -190,34 +190,45 @@ def pra a, d = 2, o: false, &b
 
   a.each_with_index {
     |x, i|
+    (i, x) = x if a.kind_of? Hash
 
-    spc if i <= 9
+    spc if i.to_s.size < 2
     print "#{i}│"
 
-    x.each {
-      |z|
+    x.each_with_index {
+      |z, j|
+      (j, z) = z if x.kind_of? Hash
+
       y = z.to_s
 
-      spc d - y.size
-
+      y = \
       if b
-        print yield z, y
+        z, y = yield z, y
 
-      else
-        if z == E
-          spc
 
-        else
-          print y
-
-        end
+      elsif z == E
+        ' '
 
       end
+
+      spc d - z.to_s.size
+      print y
+
     }
     puts
 
   }
   puts
+end
+
+def pr3 a, &b
+  a.each_with_index {
+    |x, i|
+    (i, x) = x if a.kind_of? Hash
+
+    deb "i: #{i}"
+    pra x, &b
+  }
 end
 
 # add enumerables $2 into $1
@@ -390,7 +401,7 @@ end
 
 # Print $1 spaces; or $2
 def spc n = 1, s = ' '
-  print s * n
+  print s * n if n > 0
 end
 
 # Substract first element in array $1
