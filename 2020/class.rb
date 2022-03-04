@@ -246,7 +246,28 @@ def pr3 a, l = :i, &b
     x = a[i]
 
     deb l, i
-    pra x, &b
+    pra x, &b if x
+  }
+end
+
+def pr4 a, l = :j, &b
+  return unless DEB
+
+  k = \
+    if a.respond_to? :keys
+      a.keys.sort
+
+    else
+      (0...a.size)
+
+    end
+
+  k.each {
+    |i|
+    x = a[i]
+
+    deb l, i
+    pr3 x, &b if x
   }
 end
 
