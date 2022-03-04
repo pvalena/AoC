@@ -166,10 +166,18 @@ end
 def pra a, d = 2, o: false, &b
   return unless DEB or o
 
+
+  z = \
+  a.detect {
+    |x|
+    x.respond_to? :size
+
+  }.size
+
   s = 2
 
   spc s+1
-  a[0].size.times {
+  z.times {
     |i|
 
     i = i.to_s
@@ -179,7 +187,7 @@ def pra a, d = 2, o: false, &b
   puts
 
   spc s+1
-  a[0].size.times {
+  z.times {
     |i|
 
     i = i.to_s
@@ -201,32 +209,43 @@ def pra a, d = 2, o: false, &b
 
       y = z.to_s
 
-      y = \
-      if b
-        z, y = yield z, y
+      z, y = \
+        if b
+          yield(z, y)
 
 
-      elsif z == E
-        ' '
+        elsif z == E
+          [' '] * 2
 
-      end
+        end
 
       spc d - z.to_s.size
       print y
 
-    }
+    } if x.respond_to? :each_with_index
     puts
 
-  }
+  } if a.respond_to? :each_with_index
   puts
 end
 
-def pr3 a, &b
-  a.each_with_index {
-    |x, i|
-    (i, x) = x if a.kind_of? Hash
+def pr3 a, l = :i, &b
+  return unless DEB
 
-    deb "i: #{i}"
+  k = \
+    if a.respond_to? :keys
+      a.keys.sort
+
+    else
+      (0...a.size)
+
+    end
+
+  k.each {
+    |i|
+    x = a[i]
+
+    deb l, i
     pra x, &b
   }
 end
@@ -343,10 +362,7 @@ end
 # Run irb with context $*
 def irb *a
   require 'irb'
-  begin
-    binding.irb
-  rescue
-  end
+  binding.irb
 end
 
 # Ass + deb $*
