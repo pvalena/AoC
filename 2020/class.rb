@@ -245,8 +245,10 @@ def pr3 a, l = :i, &b
     |i|
     x = a[i]
 
-    deb l, i
-    pra x, &b if x
+    if x
+      deb l, i
+      pra x, &b
+    end
   }
 end
 
