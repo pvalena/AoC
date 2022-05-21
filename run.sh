@@ -3,9 +3,19 @@
 set -e
 zsh -n "$0"
 
-cmd() {
-  echo "time ${2} data${1}${3:+-t}.txt"
+u="ulimit -s"
+l=2097024
+
+cmd () {
+  echo "time { ${2} data${1}${3:+-t}.txt ; echo ; }"
 }
+
+[[ "${1:0:2}" == '-d' ]] && {
+  DEBUG="$1"
+  set -x
+  shift
+  :
+} || DEBUG=
 
 [[ "${1:0:2}" == '-n' ]] && {
   n="$2"
@@ -33,4 +43,11 @@ o="`cmd $i $x` $n"
 echo "> $c"
 echo ">> $o"
 
-cst -c "$x" "ulimit -s 2097024 && $c && $o ; echo"
+zsh -c "$u $l" || {
+  l=65520
+  zsh -c "$u $l"
+}
+
+export RUBY_THREAD_VM_STACK_SIZE=15000000
+
+cst -c "$x" "${DEBUG:+set -x;} $u $l && $c && $o"

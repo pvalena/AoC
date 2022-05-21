@@ -5,6 +5,7 @@
 
 require 'colorize'
 require 'ap'
+require 'benchmark'
 
 alias :p :pp
 
@@ -613,8 +614,7 @@ end
 
 # Print result $1
 def res r
-  puts
-  puts "\n=> " + r.to_s
+  puts '', "=> #{r}"
 end
 
 # Get commandline arg
