@@ -5,9 +5,16 @@ zsh -n "$0"
 
 u="ulimit -s"
 l=2097024
+m=
 
 cmd () {
-  echo "time { ${2} data${1}${3:+-t}.txt ; echo ; }"
+  local q="${2} data${1}${3:+-t}.txt ; echo"
+
+  [[ -z "$m" ]] || {
+    q="time { ${q}; }"
+  }
+
+  echo "{ $q; }"
 }
 
 [[ "${1:0:2}" == '-d' ]] && {
