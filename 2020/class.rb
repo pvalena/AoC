@@ -632,7 +632,7 @@ def hsh
   Hash.new {
     |h, i|
 
-    h[i] = yield i
+    h[i] = yield h, i
   }
 end
 

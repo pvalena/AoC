@@ -24,7 +24,7 @@ class R
 
     h = \
       hsh {
-        |i|
+        |h, i|
         g[i+1] ? g[i+1] - g[i] : 0
       }
     @h = h
