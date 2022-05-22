@@ -321,7 +321,7 @@ end
 
 # Convert values in nested arrays $1 `.to_s`
 # Optionally handle by block
-def to_s a, &b
+def tos a, &b
   a.map {
     |v|
 
@@ -334,6 +334,9 @@ def to_s a, &b
       r ? r : v.to_s
     end
   }
+end
+def to_s *a, &b
+  tos *a, &b
 end
 
 # Length-1 symbols from a string
@@ -432,7 +435,7 @@ def err *z, l: :'e', x: true
       z = z[0]
     end
 
-    z.unshift l if z.respond_to? :unshift
+    z.unshift l if z.respond_to?(:unshift) && !iss(z.first)
     deb *z, o: true
   end
 
@@ -509,7 +512,8 @@ def bor s, i, j
     && j < s[i].size
 end
 
-# Lookup around array $1, check block
+# Lookup around 2D array $1, check block
+# coordinates $2, $3
 def rou z, i, j, &b
   c = 0
 
@@ -532,7 +536,6 @@ def rou z, i, j, &b
 
   c
 end
-
 
 # Runs `any?` on array $1,
 # checking only n $2 starting and ending elements.
@@ -609,7 +612,6 @@ end
 # In array $1, swap entries $2 and $3
 def swp a, f, s
   (a[f], a[s]) = [a[s], a[f]]
-
 end
 
 # Print result $1
