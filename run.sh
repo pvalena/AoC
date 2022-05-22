@@ -1,4 +1,4 @@
-#!/usr/bin/zsh
+#!/usr/bin/env zsh
 
 set -e
 zsh -n "$0"
@@ -35,7 +35,7 @@ p=${2:-}
 x="./adventofcode${i}${p:+-$p}.rb"
 
 [[ -n "$t" ]] \
-  && c="r=\"\$(`cmd $i $x $t` $n 2>&1 | tee -a /dev/stderr | grep '^=>' | cut -d' ' -f2-)\" && [[ \"$t\" == \"\$r\" ]]" \
+  && c="r=\"\$(`cmd $i $x $t` $n 2>&1 | tee -a /dev/stderr | { grep '^=>' | cut -d' ' -f2-} 2>/dev/null )\" && [[ \"$t\" == \"\$r\" ]] && echo" \
   || c="echo -n"
 t=
 o="`cmd $i $x` $n"
