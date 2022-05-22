@@ -66,16 +66,19 @@ end
 def isi a
   a.kind_of?(Integer)
 end
+alias :isi? :'isi'
 
 # Is array
 def isa a
   a.kind_of?(Array)
 end
+alias :isa? :'isa'
 
 # Is Symbol
 def iss a
   a.kind_of?(Symbol)
 end
+alias :iss? :'iss'
 
 # Print inspect, no spaces
 def pri n
