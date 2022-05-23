@@ -8,7 +8,7 @@ l=2097024
 m=
 
 cmd () {
-  local q="${2} data${1}${3:+-t}.txt ; echo"
+  local q="${2} data${1}${4:+-t}.txt ${3} ; echo"
 
   [[ -z "$m" ]] || {
     q="time { ${q}; }"
@@ -41,11 +41,14 @@ p=${2:-}
 
 x="./adventofcode${i}${p:+-$p}.rb"
 
+[[ -r "$x" ]] || exit 7
+[[ -x "$x" ]] || chmod +x "$x"
+
 [[ -n "$t" ]] \
-  && c="r=\"\$(`cmd $i $x $t` $n 2>&1 | tee -a /dev/stderr | { grep '^=>' | cut -d' ' -f2-} 2>/dev/null )\" && [[ \"$t\" == \"\$r\" ]] && echo" \
+  && c="r=\"\$(`cmd $i $x $n $t` 2>&1 | tee -a /dev/stderr | { grep '^=>' | cut -d' ' -f2-} 2>/dev/null )\" && [[ \"$t\" == \"\$r\" ]] && echo" \
   || c="echo -n"
 t=
-o="`cmd $i $x` $n"
+o="`cmd $i $x $n`"
 
 echo "> $c"
 echo ">> $o"
