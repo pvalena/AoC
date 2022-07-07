@@ -360,6 +360,7 @@ def sym x, &b
     x
   end
 end
+alias :to_sym :'sym'
 
 # Nicely print long array $1, with $2 elements per line
 def dar z, n = 5
