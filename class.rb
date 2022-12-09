@@ -3,8 +3,8 @@
 # export RUBY_THREAD_VM_STACK_SIZE=15000000
 # ulimit -s 2097024
 
-require 'colorize'
-require 'ap'
+#require 'colorize'
+#require 'ap'
 require 'benchmark'
 
 alias :p :pp
@@ -18,7 +18,8 @@ S = 45000
 E = 9999999
 
 # Input ARGF; process block per element in a line
-# Skip empty lines? $1
+#
+# $1: Skip empty lines?
 def inp n = true, &b
 
   puts if DEB
