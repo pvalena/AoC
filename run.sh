@@ -7,8 +7,15 @@ u="ulimit -s"
 l=2097024
 m=
 
+#
+# 1: command
+# 2: task nr
+# 3: testing
+# 4..: extra args
+#
 cmd () {
-  local q="${2} data${1}${4:+-t}.txt ${3} ; echo"
+  : "cmd: $1 $2 $3 $4"
+  local q="${1} data${2}${3:+-t}.txt ${4} ${5} ${6} ; echo"
 
   [[ -z "$m" ]] || {
     q="time { ${q}; }"
@@ -42,8 +49,12 @@ cmd () {
   :
 } || t=
 
+: "opts: n=$n f=$f t=$t"
+
 i=${1:-}
 p=${2:-}
+
+: "args: i=$i p=$p"
 
 x="./${f}${i}${p:+-$p}.rb"
 
@@ -51,10 +62,10 @@ x="./${f}${i}${p:+-$p}.rb"
 [[ -x "$x" ]] || chmod +x "$x"
 
 [[ -n "$t" ]] \
-  && c="r=\"\$(`cmd $i $x $n $t` 2>&1 | tee -a /dev/stderr | { grep '^=>' | cut -d' ' -f2-} 2>/dev/null )\" && [[ \"$t\" == \"\$r\" ]] && echo" \
+  && c="r=\"\$(`cmd $x $i ${t:-''} $n` 2>&1 | tee -a /dev/stderr | { grep '^=>' | cut -d' ' -f2-} 2>/dev/null )\" && [[ \"$t\" == \"\$r\" ]] && echo" \
   || c="echo -n"
 t=
-o="`cmd $i $x $n`"
+o="`cmd $x $i '' $n`"
 
 echo "> $c"
 echo ">> $o"
