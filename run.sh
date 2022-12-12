@@ -3,6 +3,9 @@
 set -e
 zsh -n "$0"
 
+export RUBYOPT='--jit'
+export RUBY_THREAD_VM_STACK_SIZE=15000000
+
 u="ulimit -s"
 l=2097024
 m=
@@ -70,11 +73,16 @@ o="`cmd $x $i '' $n`"
 echo "> $c"
 echo ">> $o"
 
-zsh -c "$u $l" || {
+zsh -c "set -x; $u $l" || {
   l=65520
-  zsh -c "$u $l"
+  zsh -c "set -x; $u $l"
 }
 
-export RUBY_THREAD_VM_STACK_SIZE=15000000
+# ineffective
+#while [[ $l -gt 2 ]]; do
+#  zsh -c "set -x; $u $l" && break
+#
+#  let "l = $l / 2"
+#done
 
 cst -c "$x" "${DEBUG:+set -x;} $u $l && $c && $o"

@@ -3,13 +3,20 @@
 # export RUBY_THREAD_VM_STACK_SIZE=15000000
 # ulimit -s 2097024
 
-#require 'colorize'
-#require 'ap'
-require 'benchmark'
+def safe_req z
+  begin
+    require(z)
+  rescue LoadError
+  end
+end
+
+safe_req 'colorize'
+safe_req 'ap'
+safe_req 'benchmark'
 
 alias :p :pp
 
-DEB = true
+DEB = true unless defined?(DEB)
 
 # Max stack depth
 S = 45000
@@ -20,7 +27,7 @@ E = 9999999
 # Input ARGF; process block per element in a line
 #
 # $1: Skip empty lines?
-def inp n = true, &b
+def inp n = true, s = true, &b
 
   puts if DEB
 
@@ -28,7 +35,9 @@ def inp n = true, &b
     .readlines
     .map {
       |o|
-      l = o.chomp.split
+      l = o.chomp
+
+      l = s ? l.split : [l]
 
       next if n && l.empty?
 
@@ -68,6 +77,12 @@ def isi a
   a.kind_of?(Integer)
 end
 alias :isi? :'isi'
+
+# Is integer
+def ish a
+  a.kind_of?(Hash)
+end
+alias :ish? :'ish'
 
 # Is array
 def isa a
@@ -186,7 +201,7 @@ def pra a, d = 2, o: false, &b
     |i|
 
     i = i.to_s
-    spc d - i.size
+    spc(d - i.size + 1)
     print i
   }
   puts
@@ -196,7 +211,7 @@ def pra a, d = 2, o: false, &b
     |i|
 
     i = i.to_s
-    spc d - 1
+    spc(d - i.size + 1)
     print "─"
   }
   puts
@@ -218,13 +233,14 @@ def pra a, d = 2, o: false, &b
         if b
           yield(z, y)
 
-
         elsif z == E
           [' '] * 2
 
         end
 
-      spc d - z.to_s.size
+      y = z if y.nil?
+
+      spc(d - z.to_s.size + 1)
       print y
 
     } if x.respond_to? :each_with_index
@@ -283,6 +299,16 @@ def add a, b
   b.each_with_index {
     |_, k|
     a[k] += b[k]
+  }
+
+  a
+end
+
+# add enumerables $2 into $1
+def del a, b
+  b.each_with_index {
+    |_, k|
+    a[k] -= b[k]
   }
 
   a
@@ -411,17 +437,8 @@ def ass *a
     |z|
     begin
 
-      r = \
-      if a.first.is_a?(Symbol)
-        a.shift
-
-      else
-        :ass
-
-      end
-
-      err a, l: r, x: false
-      irb *a
+      err(*a, x: false)
+      #irb *a
 
     ensure
       abort
