@@ -19,10 +19,30 @@ alias :p :pp
 DEB = true unless defined?(DEB)
 
 # Max stack depth
-S = 45000
+M = 45000
 
 # Empty? Absurdly big?
 E = 9999999
+
+# a to z symbols in an array
+S = (:a..:z).to_a
+
+# Directions in 2d array
+# - left, right, up, down
+D = [0, -1, 1].inject([]) {
+      |k, i|
+
+      if i == 0
+        [-1, 1].each {
+          |j|
+          k << [0, j]
+        }
+      else
+        k << [i, 0]
+      end
+
+      k
+    }
 
 # Input ARGF; process block per element in a line
 #
@@ -96,7 +116,7 @@ def iss a
 end
 alias :iss? :'iss'
 
-# Print inspect, no spaces
+# inspect, to string, no spaces
 def pri n
   n.inspect.to_s.split(' ').join
 end
@@ -662,3 +682,61 @@ def mul a
     x * k
   }
 end
+
+# out() 2d array and err
+# $1: global array
+# $2: sub-array
+def eut a, x
+  out a, x
+  err :x, x
+end
+
+# Print selected output using pra
+# $1: Array to print
+# $2: Array with indexes to select
+# $3: spacing
+def out a, v, s = 0
+  a = \
+  a.each_with_index.map {
+    |r, i|
+
+    r.each_with_index.map {
+      |g, j|
+
+      g if v.include? [i, j]
+    }
+  }
+
+  pra(a, s) {
+    |x|
+    x ? x : ' '
+  }
+end
+
+# Set value in 2d array
+# $1: Array
+# $2: [x, y]
+# $3: value
+def set a, l, z
+  i, j = l
+
+  a[i][j] = z
+end
+
+# Get value from 2d array
+# $1: Array
+# $2: [x, y]
+# $3: optional block for post-processing
+def get a, l, &b
+  i, j = l
+
+  r = a[i][j]
+
+  r = yield(r, i, j) if b
+
+  r
+end
+
+def to_s
+  @r.to_s
+end   
