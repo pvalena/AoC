@@ -740,3 +740,12 @@ end
 def to_s
   @r.to_s
 end   
+
+def ben &b
+  b = \
+  Benchmark.measure {
+    yield
+  }
+
+  deb :b, b.real, o: true
+end
