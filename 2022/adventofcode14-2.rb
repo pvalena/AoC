@@ -43,36 +43,43 @@ class R
     @m = w.map { |(_, x)| x }.max
 
     o = []
+    oo = []
     i = 0
     t = [0, 0]
     a = []
     l = E
 
-    while true
-      if (i % 10 == 0 && a.size < l) || a.empty?
-        s = san(w, o)
+    j = 10
+    f = 1000
 
-        return (o.size+1) unless s || @s == s
+    # skip-frames + 1
+    e = 1
+
+    while true
+      if (i % j == 0) || a.empty?
+        s = san(w + oo, o)
+
+        break unless s || @s == s
         a << s
       end
 
       a.map! {
         |s|
 
-        san(w, o, s)
+        san(w + oo, o, s)
       }
 
       a -= [nil]
 
-      if @d
-        out w, (o + a), b: true
+      if @d && i % e == 0
+        out w, (o + a), oo, b: true
         sleep 0.1
       end
 
       i += 1
 
       if @d && i % 100 == 0
-        m = o.max[0]
+        m = (o + oo).max[0]
 
         q = \
         o.select {
@@ -80,19 +87,32 @@ class R
 
           z[0] == m
 
-        }.sample
+        }
 
-        if q == t
-          o -= [q]
+        if q.size == 1 && q[0] == t
+          o -= q
         end
 
-        t = q
+        t = q[0]
+      end
+      
+      if @d && i % f == 0 && i > 0
+
+        #j -= 1 if j > 2 && i % f * 3 == 0
+
+        oo += o
+        o = oo.pop(200)
+
+        oo.uniq!
+        o.uniq!
+        
+        #err :o, o.size, oo.size, j, i if oo.size > 0
       end
     end
 
-    out w, o
+    out w, o+oo
 
-    o.size + 1
+    (oo+o).size + 1
   end
 
   def san w, o, s = nil, n = @n
@@ -126,9 +146,10 @@ class R
     s
   end
 
-  def out(w, o = [], h: false, b: false)
+  def out(w, o = [], oo = [], h: false, b: false, l: nil)
     w = dcl w
     o = dcl o
+    oo = dcl oo
     s = dcl @s
 
     m = [0, 0]
@@ -150,7 +171,15 @@ class R
 
         x < l + d
       }
+
+      oo.select! {
+        |(x, _)|
+
+        x < l + d
+      }
     end
+
+    o += oo
 
     w += o
     w << s
