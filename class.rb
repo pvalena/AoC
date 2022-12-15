@@ -741,7 +741,7 @@ def out a, v, s = 0, h: true, b: false, o: false
 
   if b
     $stdout = STDOUT
-    f = f.string
+    f = f.string.lines.map { |z| z.rstrip }.join("\n")
     system('clear')
     print f
     STDOUT.flush
