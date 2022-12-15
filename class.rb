@@ -13,6 +13,7 @@ end
 safe_req 'colorize'
 safe_req 'ap'
 safe_req 'benchmark'
+safe_req 'stringio'
 
 alias :p :pp
 
@@ -47,11 +48,14 @@ D = [0, -1, 1].inject([]) {
 # Input ARGF; process block per element in a line
 #
 # $1: Skip empty lines?
-def inp n = true, s = true, &b
+# $2: Split lines?
+def inp n: true, s: true, f: ARGF, &b
 
   puts if DEB
 
-  ARGF
+  f = File.open(f) if f.kind_of?(String)
+  
+  f
     .readlines
     .map {
       |o|
@@ -203,9 +207,10 @@ end
 # o: override DEB output
 # block to modify printed value
 # or compare to E => spc
-def pra a, d = 2, o: false, &b
-  return unless DEB or o
+# h: show header?
+def pra a, d = 2, o: false, h: true, &b
 
+  return unless DEB or o
 
   z = \
   a.detect {
@@ -216,32 +221,36 @@ def pra a, d = 2, o: false, &b
 
   s = 2
 
-  spc s+1
-  z.times {
-    |i|
+  if h
+    spc s+1
+    z.times {
+      |i|
 
-    i = i.to_s
-    spc(d - i.size + 1)
-    print i
-  }
-  puts
+      i = i.to_s
+      spc(d - i.size + 1)
+      print i
+    }
+    puts
 
-  spc s+1
-  z.times {
-    |i|
+    spc s+1
+    z.times {
+      |i|
 
-    i = i.to_s
-    spc(d - i.size + 1)
-    print "─"
-  }
-  puts
+      i = i.to_s
+      spc(d - i.size + 1)
+      print "─"
+    }
+    puts
+  end
 
   a.each_with_index {
     |x, i|
     (i, x) = x if a.kind_of? Hash
 
-    spc if i.to_s.size < 2
-    print "#{i}│"
+    if h
+      spc if i.to_s.size < 2
+      print "#{i}│"
+    end
 
     x.each_with_index {
       |z, j|
@@ -706,7 +715,9 @@ end
 # $1: Array to print
 # $2: Array with indexes to select
 # $3: spacing
-def out a, v, s = 0
+# h: headers
+# b: blank screen before
+def out a, v, s = 0, h: true, b: false, o: false
   a = \
   a.each_with_index.map {
     |r, i|
@@ -718,12 +729,23 @@ def out a, v, s = 0
     }
   }
 
-  #err :o, a, v
+  if b
+    f = StringIO.new
+    $stdout = f
+  end
 
-  pra(a, s) {
+  pra(a, s, h: h, o: o) {
     |x|
     x ? x : ' '
   }
+
+  if b
+    $stdout = STDOUT
+    f = f.string
+    system('clear')
+    print f
+    STDOUT.flush
+  end
 end
 
 # Set value in 2d array
@@ -795,7 +817,7 @@ def lin f, t
     ran(f[1], t[1]) {
       |y|
 
-      z << [y, x]
+      z << [x, y]
 
     }
   }
