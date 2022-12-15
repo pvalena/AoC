@@ -1,6 +1,6 @@
 #!/usr/bin/env -S ruby
 
-#DEB = false
+DEB = false
 
 require_relative 'class'
 
@@ -43,12 +43,51 @@ class R
     @m = w.map { |(_, x)| x }.max
 
     o = []
+    i = 0
+    t = [0, 0]
+    a = []
+    l = E
 
-    while s = san(w, o)
+    while true
+      if (i % 10 == 0 && a.size < l) || a.empty?
+        s = san(w, o)
 
-      break if @s == s
+        return (o.size+1) unless s || @s == s
+        a << s
+      end
 
-      o << s
+      a.map! {
+        |s|
+
+        san(w, o, s)
+      }
+
+      a -= [nil]
+
+      if @d
+        out w, (o + a), b: true
+        sleep 0.1
+      end
+
+      i += 1
+
+      if @d && i % 100 == 0
+        m = o.max[0]
+
+        q = \
+        o.select {
+          |z|
+
+          z[0] == m
+
+        }.sample
+
+        if q == t
+          o -= [q]
+        end
+
+        t = q
+      end
     end
 
     out w, o
@@ -56,32 +95,27 @@ class R
     o.size + 1
   end
 
-  def san w, o, n = @n
-    s = dcl @s
+  def san w, o, s = nil, n = @n
+    s ||= dcl @s
 
-    r = [0, 0]
+    r = s
 
-    while r != s && s[0] < n + 1
-      r = s
-      s = rux( w + o, s )
+    s = rux( w + o, s )
 
-      if @d
-        out w, (o + [s]), b: true
-        sleep 0.05
-      end
-
-      #return if s[0] > n
+    unless r != s && s[0] < n + 1
+      o << s
+      return
     end
 
     s
   end
 
-  R = [[1, 0], [1, -1], [1, 1]]
+  R = [[1, 0], [1, 0], [1, -1], [1, 1]]
 
   def rux w, s
     #dss :rux, s
 
-    R.each {
+    R.shuffle.each {
       |x|
 
       n = [ s[0] + x[0], s[1] + x[1] ]
@@ -150,17 +184,17 @@ class R
 
     x, y = m[0] - r + d, m[1] - c + d
 
-    a = [ [ :'#' ] * y ] * x
+    a = [ [ '#'.colorize(:cyan) ] * y ] * x
     a = dcl a
 
-    set(a, s, :+)
+    set(a, s, @d ? ' ' : :+)
 
     o.each {
       |g|
-      set(a, g, :o)
+      set(a, g, 'o'.colorize(:white))
     }
 
-    super(a, w, h: h, b: b)
+    super(a, w, h: h, b: b, o: true)
   end
 end
 
