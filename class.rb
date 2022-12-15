@@ -657,7 +657,7 @@ def swp a, f, s
 end
 
 # Print result $1
-def res r
+def res r = R.new
   puts '', "=> #{r}"
 end
 
@@ -683,12 +683,23 @@ def mul a
   }
 end
 
-# out() 2d array and err
-# $1: global array
-# $2: sub-array
-def eut a, x
+# out() and err()
+# All args
+# $1: passed only to out
+# $2: passed to both out and err
+def eut a, x = nil, l = :eut
   out a, x
-  err :x, x
+  err l, x
+end
+
+def ran b, e, &l
+
+  b, e = e, b if b > e 
+
+  (b..e).each {
+    |x|
+    yield x
+  }
 end
 
 # Print selected output using pra
@@ -706,6 +717,8 @@ def out a, v, s = 0
       g if v.include? [i, j]
     }
   }
+
+  #err :o, a, v
 
   pra(a, s) {
     |x|
@@ -748,4 +761,44 @@ def ben &b
   }
 
   deb :b, b.real, o: true
+end
+
+def dra a
+  w = []
+
+  a.each {
+    |l|
+
+    l -= [nil]
+
+    f = l.shift
+
+    l.each {
+      |t|
+
+      z = lin(f, t)
+
+      w += z 
+      f = t
+    }
+  }
+
+  w.uniq!
+end
+
+def lin f, t
+  z = []
+
+  ran(f[0], t[0]) {
+    |x|
+
+    ran(f[1], t[1]) {
+      |y|
+
+      z << [y, x]
+
+    }
+  }
+
+  z
 end
