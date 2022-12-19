@@ -15,7 +15,9 @@ safe_req 'ap'
 safe_req 'benchmark'
 safe_req 'stringio'
 
-alias :p :pp
+if defined?(ap)
+  alias :pp :ap
+end
 
 DEB = true unless defined?(DEB)
 
@@ -49,7 +51,12 @@ D = [0, -1, 1].inject([]) {
 #
 # $1: Skip empty lines?
 # $2: Split lines?
-def inp n: true, s: true, f: ARGF, &b
+def inp(nn = nil, ss = nil, n: true, s: true, f: ARGF, &b)
+
+  n = nn unless nn.nil?
+  s = ss unless ss.nil?
+
+  #err :inp, n, s, nn, ss, f
 
   puts if DEB
 
@@ -343,6 +350,20 @@ def del a, b
   a
 end
 
+# return a value in range
+# $1: value
+# $2: from
+# $3: to
+def lim v, f, t
+  if v < f
+    f
+  elsif v > t
+    t
+  else
+    v
+  end
+end
+
 # Deep clone a
 def dcl a
   b = []
@@ -433,16 +454,44 @@ def dar z, n = 5
   puts
 end
 
+# Compute manhattan distance
+# $1: [a,b]
+# $2: [x,y]
+def man x, y
+  y.each_with_index.inject(0) {
+    |k, (g, i)|
+
+    k + (x[i] - g).abs
+  }
+end
+
 # Debug output $*
 # o: override DEB output
-def deb *i, o: false
+def deb *i, o: false, l: nil
   return unless DEB or o
+
+  a = i.shift if i.first.kind_of?(Symbol)
 
   while i.respond_to?(:size) && i.size == 1 && i != i[0]
     i = i[0]
   end
 
-  p i
+  if l.nil?
+    l = !( i.respond_to?(:each) && i.flatten.size >= 5 )
+  end
+
+  unless l
+    pp a
+    pp i
+
+    #i.each {
+    #  |j|
+    #  pp j
+    #}
+  else
+    p [a, i]
+  end
+
   puts
 end
 
@@ -705,10 +754,15 @@ def ran b, e, &l
 
   b, e = e, b if b > e 
 
-  (b..e).each {
-    |x|
-    yield x
-  }
+  r = (b..e)
+
+  r.each_with_index {
+    |x, i|
+    yield x, i
+
+  } if block_given?
+
+  r
 end
 
 # Print selected output using pra
@@ -823,4 +877,10 @@ def lin f, t
   }
 
   z
+end
+
+# Return maximum of values in the second column of 2d array
+# $1: array
+def max2 a
+  a.map { |(_, x)| x }.max
 end
