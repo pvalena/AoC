@@ -14,6 +14,7 @@ safe_req 'colorize'
 safe_req 'ap'
 safe_req 'benchmark'
 safe_req 'stringio'
+safe_req 'parallel'
 
 if defined?(ap)
   alias :pp :ap
@@ -47,14 +48,44 @@ D = [0, -1, 1].inject([]) {
       k
     }
 
+# Directions in 2d array
+# - left, right, up, down, towards, backwards
+D3 = \
+  [0, -1, 1].inject([]) {
+    |k, i|
+
+    if i == 0
+      [0, -1, 1].each {
+        |j|
+
+        if j == 0
+
+          [-1, 1].each {
+            |h|
+            k << [0, 0, h]
+          }
+
+        else
+          k << [0, j, 0]
+        end
+
+      }
+    else
+      k << [i, 0, 0]
+    end
+
+    k
+  }
+
 # Input ARGF; process block per element in a line
 #
 # $1: Skip empty lines?
 # $2: Split lines?
-def inp(nn = nil, ss = nil, n: true, s: true, f: ARGF, &b)
+def inp(nn = nil, ss = nil, gg = nil, g: true, n: true, s: true, f: ARGF, &b)
 
   n = nn unless nn.nil?
   s = ss unless ss.nil?
+  g = gg unless gg.nil?
 
   #err :inp, n, s, nn, ss, f
 
@@ -64,21 +95,30 @@ def inp(nn = nil, ss = nil, n: true, s: true, f: ARGF, &b)
   
   f
     .readlines
+    .each_with_index
     .map {
-      |o|
+      |o, j|
       l = o.chomp
 
-      l = s ? l.split : [l]
+      l.gsub!(/[,.:;]/,' ') if g
+
+      #l = s ? l.split : [l]
+
+      l = l.split
 
       next if n && l.empty?
 
       if b
-        l = \
-        l .each_with_index.map {
+        if s
+          l = \
+          l.each_with_index.map {
             |v, i|
 
             yield v, i
           }
+        else
+          yield l, j
+        end
       end
 
       l = l[0] if l.size == 1
@@ -101,6 +141,19 @@ def tal s, &b
     end
 
   }.tally
+end
+
+# Yield nearby fields in 3d array
+def near3 w
+  a, b, c = w
+
+  D3.any? {
+    |(x, y, z)|
+
+    t = [ a+x, b+y, c+z ]
+
+    f.include?( t )
+  }
 end
 
 # Is integer
@@ -340,7 +393,7 @@ def add a, b
   a
 end
 
-# add enumerables $2 into $1
+# remove enumerables $2 into $1
 def del a, b
   b.each_with_index {
     |_, k|
@@ -477,7 +530,7 @@ def deb *i, o: false, l: nil
   end
 
   if l.nil?
-    l = !( i.respond_to?(:each) && i.flatten.size >= 5 )
+    l = !( (i.respond_to?(:each) && i.flatten.size >= 5) || i.kind_of?(Hash) )
   end
 
   unless l
@@ -637,6 +690,35 @@ def rou z, i, j, &b
   c
 end
 
+# Lookup around 3D array
+# & check (+1 on success) via block
+# $1: array
+# $2, $3, $4: coordinates
+def rou3 z, i, j, &b
+  c = 0
+
+  err :NYI, 'rou3'
+
+  -1.upto(1).each {
+    |a|
+    x = i + a
+
+    -1.upto(1).each {
+      |b|
+      y = j + b
+
+      next unless [a, b] != [0, 0] \
+          && bor(z, x, y)
+
+      c += 1 if yield z[x][y], a, b
+
+    } if z[x]
+
+  }
+
+  c
+end
+
 # Runs `any?` on array $1,
 # checking only n $2 starting and ending elements.
 # block; or compare element to $3
@@ -750,6 +832,9 @@ def eut a, x = nil, l = :eut
   err l, x
 end
 
+# Range $1 to $2 or $2 to $1
+# whatever makes sense :)
+# & each_with_index if block
 def ran b, e, &l
 
   b, e = e, b if b > e 
@@ -826,10 +911,12 @@ def get a, l, &b
   r
 end
 
+# Helper
 def to_s
   @r.to_s
 end   
 
+# Benchmark
 def ben &b
   b = \
   Benchmark.measure {
@@ -839,6 +926,10 @@ def ben &b
   deb :b, b.real, o: true
 end
 
+# Draw a set of lines!
+# see lin(), return coordinates
+# $1: [A,B,C]  # Draws A -> B -> C
+# Where A.. are 2d coordinates
 def dra a
   w = []
 
@@ -859,9 +950,11 @@ def dra a
     }
   }
 
-  w.uniq!
+  w.uniq
 end
 
+# 2d line, from $1 to $2
+# Returns discrete coordinates
 def lin f, t
   z = []
 
@@ -879,8 +972,44 @@ def lin f, t
   z
 end
 
-# Return maximum of values in the second column of 2d array
+# Return maximum from
+# values in the second column of 2d array
+# $1: array
+def max3 a
+  a.map { |(_, _, x)| x }.max
+end
+
+# Return maximum from
+# values in the second column of 2d array
 # $1: array
 def max2 a
   a.map { |(_, x)| x }.max
+end
+
+# Return maximum from
+# values in the first column of 2d array
+# $1: array
+def max a
+  a.map { |(x, _)| x }.max
+end
+
+# Return minimum from
+# values in the second column of 2d array
+# $1: array
+def min3 a
+  a.map { |(_, _, x)| x }.min
+end
+
+# Return minimum from
+# values in the second column of 2d array
+# $1: array
+def min2 a
+  a.map { |(_, x)| x }.min
+end
+
+# Return minimum from
+# values in the first column of 2d array
+# $1: array
+def min a
+  a.map { |(x, _)| x }.min
 end
