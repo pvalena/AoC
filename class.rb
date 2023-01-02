@@ -926,6 +926,18 @@ def ben &b
   deb :b, b.real, o: true
 end
 
+def cop h
+  h = h.clone
+
+  h.keys.each {
+    |k|
+
+    h[k] = h[k].clone
+  }
+
+  h
+end
+
 # Draw a set of lines!
 # see lin(), return coordinates
 # $1: [A,B,C]  # Draws A -> B -> C
