@@ -81,11 +81,13 @@ D3 = \
 #
 # $1: Skip empty lines?
 # $2: Split lines?
-def inp(nn = nil, ss = nil, gg = nil, g: true, n: true, s: true, f: ARGF, &b)
+# $3: Trim lines?
+def inp(nn = nil, ss = nil, gg = nil, tt = nil, t: true, g: true, n: true, s: true, f: ARGF, &b)
 
   n = nn unless nn.nil?
   s = ss unless ss.nil?
   g = gg unless gg.nil?
+  t = tt unless tt.nil?
 
   #err :inp, n, s, nn, ss, f
 
@@ -104,13 +106,13 @@ def inp(nn = nil, ss = nil, gg = nil, g: true, n: true, s: true, f: ARGF, &b)
 
       #l = s ? l.split : [l]
 
-      l = l.split
+      l = l.split if t
 
       next if n && l.empty?
 
       if b
+        l = \
         if s
-          l = \
           l.each_with_index.map {
             |v, i|
 
