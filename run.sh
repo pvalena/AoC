@@ -18,7 +18,7 @@ m=
 #
 cmd () {
   : "cmd: $1 $2 $3 $4"
-  local q="${1} data${2}${3:+-t}.txt ${4} ${5} ${6} ; echo"
+  local q="${1} data${2}${3:+-t}.txt ${4} ${5} ${6} ; echo ; sleep 1"
 
   [[ -z "$m" ]] || {
     q="time { ${q}; }"
