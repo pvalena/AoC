@@ -16,9 +16,12 @@ m=
 # 3: testing
 # 4..: extra args
 #
+# SLP = sleep ?
+#
+SLP=0
 cmd () {
   : "cmd: $1 $2 $3 $4"
-  local q="${1} data${2}${3:+-t}.txt ${4} ${5} ${6} ; echo ; sleep 1"
+  local q="${1} data${2}${3:+-t}.txt ${4} ${5} ${6} ; echo ; sleep ${SLP}"
 
   [[ -z "$m" ]] || {
     q="time { ${q}; }"
@@ -45,6 +48,12 @@ cmd () {
   shift 2
   :
 } || f=adventofcode
+
+[[ "${1:0:2}" == '-s' ]] && {
+  SLP="$2"
+  shift 2
+  :
+} || SLP=1
 
 [[ "${1:0:2}" == '-t' ]] && {
   t="$2"
