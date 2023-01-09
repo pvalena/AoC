@@ -46,9 +46,10 @@ D = [0, -1, 1].inject([]) {
       end
 
       k
+
     }
 
-# Directions in 2d array
+# Directions in 3d array
 # - left, right, up, down, towards, backwards
 D3 = \
   [0, -1, 1].inject([]) {
@@ -76,6 +77,8 @@ D3 = \
 
     k
   }
+
+C = [:L, :R, :U, :D]
 
 # Input ARGF; process block per element in a line
 #
@@ -829,9 +832,9 @@ end
 # All args
 # $1: passed only to out
 # $2: passed to both out and err
-def eut a, x = nil, l = :eut
-  out a, x
-  err l, x
+def eut a, x = {}, l = :eut
+  out a, **x
+  err l, **x
 end
 
 # Range $1 to $2 or $2 to $1
@@ -852,13 +855,123 @@ def ran b, e, &l
   r
 end
 
+def out(w, s = [], t = [], \
+  wc: '#'.colorize(:cyan), \
+  sc: '.'.colorize(:green), \
+  tc: '@'.colorize(:red), \
+  o: false, f: false, d: 2, \
+  b: false, h: false)
+
+  return unless DEB || o
+
+  a = nil
+
+  unless @outc
+    w = dcl w
+    s = dcl s
+
+    # flip
+    if f
+      w.map! {
+        |(x, y)|
+
+        [-x, y]
+      }
+
+      s.map! {
+        |(x, y)|
+
+        [-x, y]
+      }
+    end
+
+    m = [0, 0]
+    n = [E, E]
+
+    #deb :w, w
+
+    # store
+    w += s
+    w += t
+
+    w.each {
+      |l|
+
+      [0, 1].each {
+        |i|
+        m[i] = l[i] if l[i] > m[i]
+        n[i] = l[i] if l[i] < n[i]
+      }
+    }
+
+    r, c = n
+    r -= d
+    c -= d
+    
+    w.map! {
+      |l|
+
+      [ l[0] - r, l[1] - c ]
+    }
+
+    # load
+    s = w.last(s.size + t.size)
+    t = s.pop(t.size)
+
+    x, y = m[0] - r + d, m[1] - c + d
+
+    a = [ [ wc ] * y ] * x
+    a = dcl a
+
+    #err :w, w.size, s.size
+
+    s.each {
+      |g|
+      set(a, g, sc)
+    }
+
+    w -= t
+
+    @outc = dcl [a, w, r, c]
+
+  else
+    a, w, r, c = dcl @outc
+
+    t = dcl t
+
+    # flip
+    if f
+      t.map! {
+        |(x, y)|
+
+        [-x, y]
+      }
+    end
+    
+    t.map! {
+      |l|
+
+      [ l[0] - r, l[1] - c ]
+    }
+  end
+
+  w += t
+
+  t.each {
+    |g|
+    set(a, g, tc)
+  }
+
+  bout(a, w, b: b, h: h, o: true)
+end
+
 # Print selected output using pra
 # $1: Array to print
 # $2: Array with indexes to select
 # $3: spacing
 # h: headers
 # b: blank screen before
-def out a, v, s = 0, h: true, b: false, o: false
+def bout a, v, s = 0, h: true, b: false, o: false
   a = \
   a.each_with_index.map {
     |r, i|
@@ -1026,4 +1139,56 @@ end
 # $1: array
 def min a
   a.map { |(x, _)| x }.min
+end
+
+def rot z, r
+
+  i = C.find_index z
+
+  n = \
+  if r == :U
+    r = :R
+    2
+  else
+    1
+  end
+
+  n.times {
+    i += r == :L ? -1 : 1
+
+    i = C.size - 1 if i < 0
+
+    i %= C.size
+  }
+
+  C[i]
+end
+
+def rrt t
+  C.detect {
+    |q|
+
+    dir(q) == t
+  }
+end
+
+def rtt d, r  
+  z = rrt d
+  z = rot z, r
+  dir z
+end
+
+def flip l, i, w = W - 1
+  l[i] = w - l[i]
+end
+
+def nex x, y
+  [ x[0] + y[0], x[1] + y[1] ]
+end
+
+def dir x
+
+  i = a.find_index x
+
+  C[i].dup
 end
