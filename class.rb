@@ -78,7 +78,7 @@ D3 = \
     k
   }
 
-C = [:L, :R, :U, :D]
+C = [:L, :R, :U, :D].freeze
 
 # Input ARGF; process block per element in a line
 #
@@ -860,7 +860,7 @@ def out(w, s = [], t = [], \
   sc: '.'.colorize(:green), \
   tc: '@'.colorize(:red), \
   o: false, f: false, d: 2, \
-  b: false, h: false)
+  b: false, h: false, &block)
 
   return unless DEB || o
 
@@ -959,7 +959,19 @@ def out(w, s = [], t = [], \
 
   t.each {
     |g|
-    set(a, g, tc)
+
+    l = \
+    if block_given?
+
+      yield [g[0] + r, g[1] + c]
+
+    else
+
+      tc
+
+    end
+
+    set(a, g, l)
   }
 
   bout(a, w, b: b, h: h, o: true)
@@ -1141,6 +1153,9 @@ def min a
   a.map { |(x, _)| x }.min
 end
 
+# Rotate a direction Left or Right or U-turn
+# $1: direction to rotate
+# $2: L / R / U
 def rot z, r
 
   i = C.find_index z
@@ -1164,6 +1179,7 @@ def rot z, r
   C[i]
 end
 
+# Reverse rotation to direction
 def rrt t
   C.detect {
     |q|
@@ -1187,8 +1203,7 @@ def nex x, y
 end
 
 def dir x
+  i = C.find_index x
 
-  i = a.find_index x
-
-  C[i].dup
+  D[i]
 end
