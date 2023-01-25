@@ -152,34 +152,50 @@ class R
 
     move w, 1, z
 
-    c = [m]
+    b = m
     i = 0
+    h = e[0]
 
-    (1..).each {
-      |g|
+    i = path(w, i, b, e, h)
 
-      s = 2 + g - 1
+    i = path(w, i, e, b, h)
 
+    i = path(w, i, b, e, h)
+
+    @i
+  end
+
+  def path w, i, c, e, h, d = false
+
+    deb :path, i, c, e, o: true
+
+    c = [c]
+
+    (i..).each {
+      |j|
+
+      s = j + 2
       @i = s
 
       c.uniq!
       c.shuffle!
 
-      #deb :run, i, s, c.size, o: true
+      deb :c, j, (s - 1), c.size, o: d
 
       n = []
 
       c.each {
         |m|
 
-        v = play w, m, e, i
+        #out w, move(w, j), m, o: d
+
+        v = play w, m, e, j, h, d: d
 
         n += v if v
       }
 
       break if @i < s
 
-      i = s - 1
       c = n
     }
 
@@ -188,12 +204,11 @@ class R
 
   DZ = [[0, 1], [1, 0], [0, 0], [-1, 0], [0, -1]]
 
-  def play w, m, e, i = 0
+  def play w, m, e, i = 0, h, d: false
 
-    deb :play, i, m, l: true
+    deb :play, i, m, h, e, l: true, o: d
   
     i += 1
-    return [m.dup] if i >= @i
 
     z = move w, i
 
@@ -206,8 +221,8 @@ class R
 
       n = nex m, x
 
-      if z[n] || w[n] || n[0] < 0
-        deb :n, m, n, x, z[n], w[n], l: true
+      if z[n] || w[n] || n[0] < 0 || n[0] > h
+        deb :n, m, n, z[n], w[n], l: true
 
         err :w, n, w if w[n] && m == n
         next
@@ -221,11 +236,9 @@ class R
         return
       end
 
-      out w, z, n
+      out w, z, n, o: d
 
-      v = play(w, n, e, i)
-
-      k += v if v
+      k << n
     }
 
     k
@@ -286,7 +299,7 @@ class R
 
   def out c, z, m, **k
 
-    return unless DEB
+    return unless DEB || k[:o]
 
     w, g = [], []
 
