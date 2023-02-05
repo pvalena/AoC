@@ -1203,6 +1203,7 @@ def nex x, y
 end
 
 def dir x
+  x = x.to_sym unless iss? x
   i = C.find_index x
 
   D[i]
