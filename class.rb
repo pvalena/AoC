@@ -444,6 +444,23 @@ def dcl a
   b
 end
 
+# Deep freeze a
+def dfr a
+
+  a.each_with_index {
+    |v, k|
+
+    if v.respond_to?(:each)
+      dfr v
+
+    else
+      v.freeze
+
+    end
+
+  }.freeze
+end
+
 # Convert values in nested arrays $1 `.to_i`
 def to_i a
   a.map {
