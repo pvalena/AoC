@@ -9,7 +9,7 @@ class R
   def initialize
 
     @a = arg.to_i if ARGV.size > 1
-    @a ||= 5
+    @a ||= 1
 
     a = {}
     n = nil
@@ -86,7 +86,7 @@ class R
 
     c = a.first
 
-    r = amp c, [1]
+    r = amp c, [@a]
 
     return r[0]
 
@@ -250,7 +250,7 @@ class R
       when 9
         a = san c, m, a.first
 
-        deb :relative, a[0], o: true
+        deb :relative, a[0] #, o: true
         @r += a[0]
 
       when 99
