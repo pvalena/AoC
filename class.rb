@@ -85,7 +85,9 @@ C = [:L, :R, :U, :D].freeze
 # $1: Skip empty lines?
 # $2: Split lines?
 # $3: Trim lines?
-def inp(nn = nil, ss = nil, gg = nil, tt = nil, t: true, g: true, n: true, s: true, f: ARGF, &b)
+def inp(nn = nil, ss = nil, gg = nil, tt = nil,
+         n: true,  s: true,  g: true,  t: true,
+         f: ARGF, &b)
 
   n = nn unless nn.nil?
   s = ss unless ss.nil?
