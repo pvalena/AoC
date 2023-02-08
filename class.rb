@@ -3,6 +3,8 @@
 # export RUBY_THREAD_VM_STACK_SIZE=15000000
 # ulimit -s 2097024
 
+## Init
+
 def safe_req z
   begin
     require(z)
@@ -20,38 +22,61 @@ if defined?(ap)
   alias :pp :ap
 end
 
-DEB = true unless defined?(DEB)
+## Constns
+
+# Debug mode! On by default
+# used for deb() calls
+DEB = true.freeze unless defined?(DEB)
 
 # Max stack depth
-M = 45000
+M = 45000.freeze
 
 # Empty? Absurdly big?
-E = 9999999
+E = 9999999.freeze
 
-# a to z symbols in an array
-S = (:a..:z).to_a
+# Deep freeze $1
+# Goind down on elemnts which understand :each
+#
+# Note: Defined early for freezing complex consts
+def dfr a
+  a.each_with_index {
+    |v, k|
 
-# Directions in 2d array
+    if v.respond_to?(:each)
+      dfr v
+
+    else
+      v.freeze
+
+    end
+
+  }.freeze
+end
+
+# :a to :z symbols in an array
+S = dfr (:a..:z).to_a
+
+# Directions in 2d array as 2d coords
 # - left, right, up, down
-D = [0, -1, 1].inject([]) {
-      |k, i|
+D = dfr \
+  [0, -1, 1].inject([]) {
+    |k, i|
 
-      if i == 0
-        [-1, 1].each {
-          |j|
-          k << [0, j]
-        }
-      else
-        k << [i, 0]
-      end
+    if i == 0
+      [-1, 1].each {
+        |j|
+        k << [0, j]
+      }
+    else
+      k << [i, 0]
+    end
 
-      k
+    k
+  }
 
-    }
-
-# Directions in 3d array
+# Directions in 3d array as 3d coords
 # - left, right, up, down, towards, backwards
-D3 = \
+D3 = dfr \
   [0, -1, 1].inject([]) {
     |k, i|
 
@@ -78,13 +103,20 @@ D3 = \
     k
   }
 
-C = [:L, :R, :U, :D].freeze
+# Symbols for 2d directions as above
+#  - Left, Right, Up, Down
+C = dfr [:L, :R, :U, :D]
 
-# Input ARGF; process block per element in a line
+
+# Input ARGF(or f:)
 #
-# $1: Skip empty lines?
-# $2: Split lines?
-# $3: Trim lines?
+# loop - process block (or per element) in a line
+#
+# $1: Skip empty lines? (or n:)
+# $2: Split lines? (or s:) - iterate per element rather than per line
+# $4: Gsub values? (or g:) - replaces stuff like .,:;
+# $4: Trim whitespace?  (or t:) - splits on any whitespace
+#
 def inp(nn = nil, ss = nil, gg = nil, tt = nil,
          n: true,  s: true,  g: true,  t: true,
          f: ARGF, &b)
@@ -100,11 +132,11 @@ def inp(nn = nil, ss = nil, gg = nil, tt = nil,
 
   f = File.open(f) if f.kind_of?(String)
   
-  f
-    .readlines
+  f .readlines
     .each_with_index
     .map {
       |o, j|
+
       l = o.chomp
 
       l.gsub!(/[,.:;]/,' ') if g
@@ -129,7 +161,6 @@ def inp(nn = nil, ss = nil, gg = nil, tt = nil,
       end
 
       l = l[0] if l.size == 1
-
       l
 
     } - [nil]
@@ -442,23 +473,6 @@ def dcl a
   }
 
   b
-end
-
-# Deep freeze a
-def dfr a
-
-  a.each_with_index {
-    |v, k|
-
-    if v.respond_to?(:each)
-      dfr v
-
-    else
-      v.freeze
-
-    end
-
-  }.freeze
 end
 
 # Convert values in nested arrays $1 `.to_i`
