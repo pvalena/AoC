@@ -107,7 +107,6 @@ D3 = dfr \
 #  - Left, Right, Up, Down
 C = dfr [:L, :R, :U, :D]
 
-
 # Input ARGF(or f:)
 #
 # loop - process block (or per element) in a line
@@ -126,7 +125,7 @@ def inp(nn = nil, ss = nil, gg = nil, tt = nil,
   g = gg unless gg.nil?
   t = tt unless tt.nil?
 
-  #err :inp, n, s, nn, ss, f
+  #err :inp, n, s, g, t, f.inspect
 
   puts if DEB
 
@@ -840,8 +839,19 @@ def res r = R.new
 end
 
 # Get commandline arg
-def arg
-  ARGV.pop.to_i
+#
+# $1: what to call on arg 
+#   :to_i by default - but feel free to redefine to anything
+def arg(i = :to_i, **k)
+  return unless ARGV.size > 1
+
+  v = ARGV.pop
+  if i && v
+    v = v.split(?,).map{ |x| x.send(i, **k) }
+    v = v.first if v.one?
+  end
+
+  v
 end
 
 # Create hash-based cache via block
@@ -1191,7 +1201,8 @@ end
 # $2: L / R / U
 def rot z, r
 
-  i = C.find_index z
+  q = [:L, :U, :R, :D]
+  i = q.find_index z
 
   n = \
   if r == :U
@@ -1204,27 +1215,29 @@ def rot z, r
   n.times {
     i += r == :L ? -1 : 1
 
-    i = C.size - 1 if i < 0
+    i = q.size - 1 if i < 0
 
-    i %= C.size
+    i %= q.size
   }
 
-  C[i]
+  q[i]
 end
 
-# Reverse rotation to direction
-def rrt t
-  C.detect {
-    |q|
+# Rotate direction coords
+#
+# $1: direction
+# $2: rotation
+def rtt d, r
+  @rtt ||= \
+    hsh {
+      |_, (d, r)|
 
-    dir(q) == t
-  }
-end
+      z = rrt d
+      z = rot z, r
+      dir z
+    }
 
-def rtt d, r  
-  z = rrt d
-  z = rot z, r
-  dir z
+  @rtt[ [d, r] ]
 end
 
 def flip l, i, w = W - 1
@@ -1241,3 +1254,26 @@ def dir x
 
   D[i]
 end
+
+# Reverse rotation to direction symbol
+#
+# $1: direction coords
+def rrt t
+  C.detect {
+    |q|
+
+    dir(q) == t
+  }
+end
+
+def inloop a, i = 0
+
+  loop {
+    i = play(a, i)
+
+    break unless i
+  }
+
+  @o
+end
+
