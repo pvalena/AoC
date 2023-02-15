@@ -1248,6 +1248,10 @@ def nex x, y
   [ x[0] + y[0], x[1] + y[1] ]
 end
 
+def nex3 x, y
+  [ x[0] + y[0], x[1] + y[1], x[2] + y[2] ]
+end
+
 def dir x
   x = x.to_sym unless iss? x
   i = C.find_index x
@@ -1277,3 +1281,14 @@ def inloop a, i = 0
   @o
 end
 
+def inparallel a
+  t = 4 unless Process.respond_to?(:fork)
+
+  Parallel.map(a, in_threads: t) {
+    |b|
+
+    r = play b
+
+    [b, r]
+  }
+end
