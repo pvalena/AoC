@@ -32,7 +32,10 @@ DEB = true.freeze unless defined?(DEB)
 M = 45000.freeze
 
 # Empty? Absurdly big?
-E = 9999999.freeze
+E = 999_999_999_999.freeze
+
+# Number to divide by for sampling
+N = 100_000_000.freeze
 
 # Deep freeze $1
 # Goind down on elemnts which understand :each
@@ -1291,4 +1294,29 @@ def inparallel a
 
     [b, r]
   }
+end
+
+def sam i, *z, q: N
+  if i % q == 0
+    deb :sam, i / q, z, o: true
+
+    yield(i/q, z) if block_given?
+  end
+end
+
+def evf f
+  r = nil
+
+  begin
+    z = File.readlines(f).join
+
+    deb :evf, f, z
+
+    r = eval(z)
+
+    deb :eval, r
+  rescue
+  end
+
+  r
 end
