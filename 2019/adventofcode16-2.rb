@@ -5,25 +5,20 @@ DEB = false
 require_relative 'class'
 
 class R
-
   def initialize
 
     puts
-
     @a = arg
 
-    a = {}
-    j = nil
-
     n, s, g, t = nil
-
     #n = false
     #s = false
     #g = false
     #t = false
 
     ii = 0
-
+    j = nil
+    a = {}
     a = \
     inp(n, s, g, t) {
       |x, i|
@@ -83,17 +78,17 @@ class R
     }
 
     ben {
-      @r = run a
+      @run = run a
     }
   end
 
-  N = [10_000]
+  N = 10_000.freeze
 
   def pat a
     def a.[](q, *k, **g)
       if k.empty? and g.empty? and q.kind_of?(Integer)
 
-        z = q % N[1]
+        z = q % @@l
 
         #err :super, z, q
 
@@ -107,24 +102,25 @@ class R
   def run a
 
     a = a.first
-    l = a.size
+    @@l = a.size
 
-    N[1] = l
-    N.freeze
+    @@q = N / 10
+    #@@r = 3
 
-    as = N[0] * l
+    as = N * @@l
     o = a.first(7).join.to_i
     n = @a || 100
+
 
     b = [a]
     c = []
 
-    af = [ a.first(l) ]
+    af = [ a.first(@@l) ]
 
     pat a
 
     af << \
-    (l...(l*2)).inject([]) {
+    (@@l...(@@l*2)).inject([]) {
       |b, w|
 
       b << a[w]
@@ -132,25 +128,106 @@ class R
 
     af.map!(&:join)
 
-    #err :af, af[1], l: true    
+    #err :af, af[1], @@l: true
 
-    deb :run, n, o, l, as, l: true, o: true
+    deb :run, n, o, @@l, as, l: true, o: true
     ass :a, af[0] == af[1], af
-  
-    8.times do
-      |i|
 
-      c << play(b, as, n, o+i)
+    o = (o..o+7).to_a
 
-      deb :c, c, b.size, (b[1] || []).size, l: true, o: true
+    o.map! {
+      |c|
+
+      play(b, as, n, c)
+    }
+
+#    w.map!(&:reverse).sort!.map! { |(_, x)| x }
+
+    o.join
+  end
+
+  def dep b, as, n, c, m, r, u, o, l = 1
+
+    i = 0
+    a = []
+    q = n
+
+    while q > l
+
+      #deb :o, l, q, o, l: true, o: true
+
+      v = []
+      o.each {
+        |c|
+
+        v += play(b, as, q, c, m, r, u, l: l)
+      }
+
+      w = nil
+      v.reject! {
+        |y|
+
+        y << y.last if y.size < 2
+
+        f, t = y
+
+        ass :y, \
+          y.size == 2, \
+          y.size, f, t, f <= t
+
+        s = (f..t)
+
+        unless w
+          w = s
+          next
+        end
+
+        err :s, w, s if inc(s, w)
+
+        err :w1, w, s unless w.include?(s)
+        err :w2, w, s unless inc(w, s)
+
+        w.include?(s)
+      }
+
+      #deb :dv, q, v.size, v, l: true, o: true
+
+      q -= l
+
+      a << [q, v]
+
+      err :o, v, o unless v.one?
+
+      v = v[0]
+
+      o = (v[0]..v[1])
     end
 
-    c.join
+    a.reverse.each {
+      |q, v|
+
+      v = v[0]
+
+      o = (v[0]..v[1])
+
+      o.to_a.shuffle!
+
+      o.each {
+#      inparallel(o) {
+        |c|
+
+        play(b, as, q, c, m, r, u)
+      }
+    }
+  end
+
+  def inc a, b
+    a.first <= b.first && b.last <= a.last
   end
 
   S = [nil, true, nil, false]
   V = []
-  
+
   def play a, as, n, i
 
     n -= 1
@@ -168,12 +245,9 @@ class R
     j = 0
     f = true
 
-    sam(i, q: N[0]) {
-      
-      [ :play, n, w.size ]
+    sam(i, :play, n, w.size)
 
-    }
-
+    # Prepare
     while j < as
 
       S.each {
@@ -188,11 +262,7 @@ class R
               next
             end
 
-            ass :ja, j, j >= 0, j < as if DEB
-
             z = w[j]
-
-            #err :z, z, f, j, l: true
 
             unless z
               z = play a, as, n, j
@@ -206,14 +276,10 @@ class R
 
             j += 1
 
-            #err :j, j, as, v if j >= as
             break 2 if j >= as
-
           }
+
         else
-
-          deb :j, j, i, l: true
-
           j += i
 
           if f
@@ -222,14 +288,36 @@ class R
           end
         end
 
-        #err :jas, j, as
-
         break if j >= as
       }
-
     end
- 
+
     v.abs % 10
+  end
+
+  def sam i, *z, q: @@q #, r: @@r
+
+    super(i, q: q) {
+      |y|
+
+      if y < 10
+
+        #deb :q, i, q, r, i % (q * 10), o: true, l: true
+
+        if i % (q * 10) == 0
+          @@q *= 10
+        else
+          @@q *= 2 if i % (q * 2) == 0
+        end
+
+      elsif y > 100
+
+        @@q /= 10 unless q <= 1 || i % (q / 10) != 0
+
+      end
+
+      z
+    }
   end
 end
 
