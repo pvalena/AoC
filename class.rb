@@ -621,15 +621,21 @@ end
 # Error exit $*
 # l: error identifier
 # x: exit?
-def err *z, l: :'e', x: true
+def err *z, l: :'e', x: true, **k
   unless z.nil? || z.empty?
+
+    if l === true || l === false
+      k[:l] = l
+
+      l = :e
+    end
 
     while z.respond_to?(:size) && z.size == 1 && z != z[0]
       z = z[0]
     end
 
     z.unshift l if z.respond_to?(:unshift) && !iss(z.first)
-    deb *z, o: true
+    deb *z, o: true, **k
   end
 
   exit if x
