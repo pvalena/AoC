@@ -22,7 +22,9 @@ if defined?(ap)
   alias :pp :ap
 end
 
-## Constns
+## Constans
+
+# list: %w{ DEB M E N S D D3 C T }
 
 # Debug mode! On by default
 # used for deb() calls
@@ -36,6 +38,9 @@ E = 999_999_999_999.freeze
 
 # Number to divide by for sampling
 N = 100_000_000.freeze
+
+# For timestamps
+T = [Time.now]
 
 # Deep freeze $1
 # Goind down on elemnts which understand :each
@@ -197,26 +202,38 @@ def near3 w
 end
 
 # Is integer
-def isi a
-  a.kind_of?(Integer)
+def isi *a
+  a.all? {
+    |b|
+    b.kind_of?(Integer)
+  }
 end
 alias :isi? :'isi'
 
 # Is integer
-def ish a
-  a.kind_of?(Hash)
+def ish *a
+  a.all? {
+    |b|
+    b.kind_of?(Hash)
+  }
 end
 alias :ish? :'ish'
 
 # Is array
-def isa a
-  a.kind_of?(Array)
+def isa *a
+  a.all? {
+    |b|
+    b.kind_of?(Array)
+  }
 end
 alias :isa? :'isa'
 
 # Is Symbol
-def iss a
-  a.kind_of?(Symbol)
+def iss *a
+  a.all? {
+    |b|
+    b.kind_of?(Symbol)
+  }
 end
 alias :iss? :'iss'
 
@@ -595,9 +612,9 @@ def irb *a
 end
 
 # Ass + deb $*
-def dss *a
-  ass *a
-  deb *a
+def dss *a, **k
+  ass *a if DEB || k[:o]
+  deb *a, **k
 end
 
 # Assert $* per argument
@@ -608,7 +625,7 @@ def ass *a
     |z|
     begin
 
-      err(*a, x: false)
+      err(*a, x: false, o: true)
       #irb *a
 
     ensure
@@ -1092,7 +1109,7 @@ end
 
 # Helper
 def to_s
-  @r.to_s
+  @run.to_s
 end   
 
 # Benchmark
@@ -1290,29 +1307,109 @@ def inloop a, i = 0
   @o
 end
 
-def inparallel a
-  t = 4 unless Process.respond_to?(:fork)
+def inparallel a, o: false 
+  unless o
+    t = 8 unless Process.respond_to?(:fork)
 
-  Parallel.map(a, in_threads: t) {
-    |b|
+    return \
+    Parallel.map(a, in_threads: t) {
+      |b|
 
-    r = play b
+      r = \
+      if block_given?
 
-    [b, r]
-  }
-end
+        yield b
 
-def sam i, *z, q: N, r: 0, l: sam
-  if i % q == r
-    if block_given?
+      else
 
-      z = yield
+        play b
+
+      end
+
+      [r, b]
+    }
+  end
+
+  h = [true] * 8
+  m = Mutex.new
+  s = []
+
+  while h.any?
+
+    w = true
+
+    h.map! {
+      |t|
+
+      if t === true
+
+        w = false
+
+        next unless a.any?
+
+        Thread.new {
+
+          b = \
+          m.synchronize {
+            a.shift
+          }    
+
+          r = \
+          if block_given?
+
+            yield b
+
+          else
+
+            play b
+
+          end
+
+          Thread.current[:r] = [r, b]     
+        }
+
+      elsif t.alive?
+        t
+
+      else
+        w = false
+
+        t.join
+        
+        s << t[:r]
+
+        true
+      end
+    }
+
+    if w
+      sleep 1
+
+    else
+      h.delete(nil) unless a.any?
 
     end
+ end
+
+  s
+end
+
+def sam i, *z, q: N, r: 0, l: :sam
+  if i % q == r
 
     z.unshift l unless iss?(z.first)
 
-    deb *z, i / q, Time.now, o: true, l: true
+    T << Time.now
+
+    d = T.last(2).reduce(:'-').abs
+
+    if block_given?
+
+      z = yield(d, *z)
+
+    end
+
+    deb *z, i, d, T.last, o: true, l: true
   end
 end
 
