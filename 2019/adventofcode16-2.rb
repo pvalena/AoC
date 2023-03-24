@@ -1,12 +1,14 @@
 #!/usr/bin/env -S ruby
 
-#DEB = false
+DEB = false
 
 require_relative 'class'
 
 class R
 
   def initialize
+
+    puts
 
     @a = arg
 
@@ -85,102 +87,149 @@ class R
     }
   end
 
-  N = 10_000
+  N = [10_000]
+
+  def pat a
+    def a.[](q, *k, **g)
+      if k.empty? and g.empty? and q.kind_of?(Integer)
+
+        z = q % N[1]
+
+        #err :super, z, q
+
+        return super(z) #or k == 1
+      end
+
+      super(q, *k, **g)
+    end
+  end
 
   def run a
 
     a = a.first
+    l = a.size
 
+    N[1] = l
+    N.freeze
+
+    as = N[0] * l
     o = a.first(7).join.to_i
-
-    a *= N
-
-    deb :a, a.first(32).join, a[32..64].join, o, a.size, l: true
-  
-    #def a.[](i)
-    #  err :oor, i if isi?(i) && i < 0
-    #  super(i) || 0
-    #end
-
     n = @a || 100
 
-    n.times {
-      a = play a
+    b = [a]
+    c = []
 
-      break
+    af = [ a.first(l) ]
+
+    pat a
+
+    af << \
+    (l...(l*2)).inject([]) {
+      |b, w|
+
+      b << a[w]
     }
 
-    a = a[o..]
+    af.map!(&:join)
 
-    a.first(8).join
-  end
+    #err :af, af[1], l: true    
 
-  S = [0, 1, 0, -1]
-  V = []
+    deb :run, n, o, l, as, l: true, o: true
+    ass :a, af[0] == af[1], af
   
-  def play a
-
-    #deb :play, a, l: true #unless O == r
-
-    c = []
-    as = a.size
-
-    as.times do
+    8.times do
       |i|
-      i += 1
 
-      v = 0
-      j = 0
-      f = true
+      c << play(b, as, n, o+i)
 
-      while j < as
-        S.each {
-          |s|
-
-          unless s == 0
-
-            i.times {
-
-              if f
-                f = false
-                next
-              end
-
-              #ass :j, j, a[j], j >= 0, j < as
-
-              v += s * a[j]
-
-              j += 1
-
-              #err :j, j, as, v if j >= as
-              break 2 if j >= as
-
-            }
-          else
-
-            j += i
-
-            if f
-              j -= 1
-              f = false
-            end
-
-          end
-
-          break if j >= as
-        }
-      end
-   
-      v = v.abs % 10
-
-#      sam(i, v, q: N)
-
-      c << v
+      deb :c, c, b.size, (b[1] || []).size, l: true, o: true
     end
 
-    deb c.join
+    c.join
+  end
 
-    c
+  S = [nil, true, nil, false]
+  V = []
+  
+  def play a, as, n, i
+
+    n -= 1
+    i += 1
+
+    w = a[n]
+
+    unless w
+      w = {}
+
+      a[n] = w
+    end
+
+    v = 0
+    j = 0
+    f = true
+
+    sam(i, q: N[0]) {
+      
+      [ :play, n, w.size ]
+
+    }
+
+    while j < as
+
+      S.each {
+        |s|
+
+        unless s.nil?
+
+          i.times {
+
+            if f
+              f = false
+              next
+            end
+
+            ass :ja, j, j >= 0, j < as if DEB
+
+            z = w[j]
+
+            #err :z, z, f, j, l: true
+
+            unless z
+              z = play a, as, n, j
+
+              w[j] = z
+            end
+
+            z = -z if s
+
+            v += z
+
+            j += 1
+
+            #err :j, j, as, v if j >= as
+            break 2 if j >= as
+
+          }
+        else
+
+          deb :j, j, i, l: true
+
+          j += i
+
+          if f
+            j -= 1
+            f = false
+          end
+        end
+
+        #err :jas, j, as
+
+        break if j >= as
+      }
+
+    end
+ 
+    v.abs % 10
   end
 end
 
