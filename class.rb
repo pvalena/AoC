@@ -844,7 +844,7 @@ end
 
 # Print result $1
 def res r = R.new
-  puts '', "=> #{r}"
+  puts "=> #{r}"
 end
 
 # Get commandline arg
@@ -1302,11 +1302,17 @@ def inparallel a
   }
 end
 
-def sam i, *z, q: N
-  if i % q == 0
-    deb :sam, i / q, z, o: true
+def sam i, *z, q: N, r: 0, l: sam
+  if i % q == r
+    if block_given?
 
-    yield(i/q, z) if block_given?
+      z = yield
+
+    end
+
+    z.unshift l unless iss?(z.first)
+
+    deb *z, i / q, Time.now, o: true, l: true
   end
 end
 
