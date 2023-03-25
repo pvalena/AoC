@@ -74,7 +74,7 @@ x="./${f}${i}${p:+-$p}.rb"
 [[ -x "$x" ]] || chmod +x "$x"
 
 [[ -n "$t" ]] \
-  && c="r=\"\$(`cmd $x $i ${t:-''} $n` 2>&1 | tee -a /dev/stderr | { grep '^=>' | cut -d' ' -f2-} 2>/dev/null )\" && [[ \"$t\" == \"\$r\" ]] && echo" \
+  && c="r=\"\$(`cmd $x $i ${t:-''} $n` 2>&1 | tee -a /dev/stderr | { grep '^=>' | cut -d' ' -f2-} 2>/dev/null; )\" && [[ \"$t\" == \"\$r\" ]] && echo" \
   || c="echo -n"
 t=
 o="`cmd $x $i '' $n`"
