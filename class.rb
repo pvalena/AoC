@@ -202,40 +202,37 @@ def near3 w
 end
 
 # Is integer
-def isi *a
-  a.all? {
-    |b|
-    b.kind_of?(Integer)
-  }
+def isi? *a
+  isw? Integer, *a
 end
-alias :isi? :'isi'
 
 # Is integer
-def ish *a
-  a.all? {
-    |b|
-    b.kind_of?(Hash)
-  }
+def ish? *a
+  isw? Hash, *a
 end
-alias :ish? :'ish'
 
 # Is array
-def isa *a
-  a.all? {
-    |b|
-    b.kind_of?(Array)
-  }
+def isa? *a
+  isw? Array, *a
 end
-alias :isa? :'isa'
+
+# Is range
+def isr? *a
+  isw? Range, *a
+end
 
 # Is Symbol
-def iss *a
+def iss? *a
+  isw? Symbol, *a
+end
+
+# Is WHAT?
+def isw? s, *a
   a.all? {
     |b|
-    b.kind_of?(Symbol)
+    b.kind_of?(s)
   }
 end
-alias :iss? :'iss'
 
 # inspect, to string, no spaces
 def pri n
@@ -602,7 +599,7 @@ def deb *i, o: false, l: nil
     p [a, i]
   end
 
-  puts
+  puts if DEB
 end
 
 # Run irb with context $*
@@ -651,7 +648,7 @@ def err *z, l: :'e', x: true, **k
       z = z[0]
     end
 
-    z.unshift l if z.respond_to?(:unshift) && !iss(z.first)
+    z.unshift l if z.respond_to?(:unshift) && !iss?(z.first)
     deb *z, o: true, **k
   end
 
@@ -1153,7 +1150,7 @@ def dra a
 
       z = lin(f, t)
 
-      w += z 
+      w += z
       f = t
     }
   }
@@ -1307,12 +1304,12 @@ def inloop a, i = 0
   @o
 end
 
-def inparallel a, o: false 
+def inparallel a, o: false, **k
   unless o
-    t = 8 unless Process.respond_to?(:fork)
+    t = 4 unless Process.respond_to?(:fork)
 
     return \
-    Parallel.map(a, in_threads: t) {
+    Parallel.map(a, in_threads: t, **k) {
       |b|
 
       r = \
@@ -1352,7 +1349,7 @@ def inparallel a, o: false
           b = \
           m.synchronize {
             a.shift
-          }    
+          }
 
           r = \
           if block_given?
@@ -1365,7 +1362,7 @@ def inparallel a, o: false
 
           end
 
-          Thread.current[:r] = [r, b]     
+          Thread.current[:r] = [r, b]
         }
 
       elsif t.alive?
@@ -1375,7 +1372,7 @@ def inparallel a, o: false
         w = false
 
         t.join
-        
+
         s << t[:r]
 
         true
@@ -1428,4 +1425,16 @@ def evf f
   end
 
   r
+end
+
+def stm t = T
+
+  t << Time.now
+
+  if block_given?
+    yield t
+  else
+    [ t.last(2).reduce(:'-').abs, t.last ]
+  end
+
 end

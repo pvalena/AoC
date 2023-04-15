@@ -94,4 +94,4 @@ zsh -c "set -x; $u $l" || {
 #  let "l = $l / 2"
 #done
 
-cst -c "$x" "${DEBUG:+set -x;} $u $l && $c && $o"
+cst "$x" "${DEBUG:+set -x;} $u $l && $c && $o"
