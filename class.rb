@@ -226,6 +226,11 @@ def iss? *a
   isw? Symbol, *a
 end
 
+# Is Text
+def ist? *a
+  isw? String, *a
+end
+
 # Is WHAT?
 def isw? s, *a
   a.all? {
@@ -921,14 +926,17 @@ def ran b, e, &l
   r
 end
 
-def out(w, s = [], t = [], \
-  wc: '#'.colorize(:cyan), \
-  sc: '.'.colorize(:green), \
-  tc: '@'.colorize(:red), \
-  o: false, f: false, d: 2, \
+def out(w, s = [], t = [],
+  wc: nil,
+  fc: '#'.colorize(:cyan),
+  sc: '.'.colorize(:green),
+  tc: '@'.colorize(:red),
+  o: false, f: false, d: 2,
   b: false, h: false, &block)
 
   return unless DEB || o
+
+  wc = fc unless wc
 
   a = nil
 
@@ -1428,7 +1436,6 @@ def evf f
 end
 
 def stm t = T
-
   t << Time.now
 
   if block_given?
@@ -1436,5 +1443,8 @@ def stm t = T
   else
     [ t.last(2).reduce(:'-').abs, t.last ]
   end
+end
 
+def inc a, b
+  a.first <= b.first && b.last <= a.last
 end
