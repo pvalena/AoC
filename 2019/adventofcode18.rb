@@ -136,9 +136,13 @@ class R
     #  super(i) || 0
     #end
 
-    @@c = 3220
+    @@c = 3130
 
     deb :run, @@c, o: true
+
+    cln b, z
+
+    out b, z, o: true
 
     play b, z, n
 
@@ -155,7 +159,7 @@ class R
 
       return if @@c <= c
 
-      dss :play, c, z, n, k, q
+      dss :play, c, z, n, k, q, l: true
       out b, z
 
       bz = b[z]
@@ -178,27 +182,17 @@ class R
         end
 
         b[z] = true
+
+        cln b, z
       end
 
   #    err :b, b
 
-      w = \
-      D.map {
-        |g|
-
-        o = nex g, z
-
-        bo = b[o]
-
-        next unless bo == true || key?(bo) || open?(bo, k)
-
-        o
-
-      } - [nil] - q - r
+      w = pat(b, z, k) - q - r
 
       case w.size
-        when 1
 
+        when 1
           q = [z]
           z = w[0]
           c += 1
@@ -221,6 +215,44 @@ class R
     end
   end
 
+  def pat b, z, k = nil
+
+    D.map {
+      |g|
+
+      o = nex g, z
+
+      bo = b[o]
+
+      next unless bo == true || key?(bo) || open?(bo, k)
+
+      o
+
+    } - [nil]
+
+  end
+
+  def cln b, z
+
+    loop do
+      break unless \
+      b.any? {
+        |k, v|
+
+        next unless v == true
+
+        next if k == z
+
+        r = pat(b, k)
+
+        next unless r.one?
+
+        b.delete k
+      }
+    end
+
+  end
+
   def key? k
 
     k && k != true \
@@ -232,7 +264,7 @@ class R
 
     k && k != true \
       && k == k.upcase \
-      && a.include?(k.downcase)
+      && ( a.nil? || a.include?(k.downcase) )
 
   end
 
@@ -258,7 +290,7 @@ class R
     s = s.keys
     t = t.keys
  
-    super(f, s, t, fc: fc, sc: sc, tc: tc, **h, d: 1, h: true)
+    super(f, s, t, fc: fc, sc: sc, tc: tc, **h) #, d: 1) #, h: true)
   end
 end
 
