@@ -136,7 +136,7 @@ class R
     #  super(i) || 0
     #end
 
-    @@c = 4434
+    @@c = 4258
 
     deb :run, @@c, o: true
 
@@ -145,7 +145,7 @@ class R
     @@c
   end
 
-  def play b, z, n, c = 0, q = [], k = []
+  def play b, z, n, c = 0, q = [], k = [], r = []
 
     b = b.dup
     k = k.dup
@@ -167,6 +167,7 @@ class R
           k << bz
           n -= 1
           q = []
+          r = []
 
           if n <= 0
             @@c = c
@@ -193,7 +194,7 @@ class R
 
         o
 
-      } - [nil] - q
+      } - [nil] - q - r
 
       case w.size
         when 1
@@ -213,7 +214,7 @@ class R
 
         g = (q + w + [z]).uniq
 
-        play b, v, n, c + 1, g, k
+        play b, v, n, c + 1, g, k, r + [z]
       }
 
       return
