@@ -136,7 +136,7 @@ class R
     #  super(i) || 0
     #end
 
-    @@c = 6238
+    @@c = 5780
 
     play b, z, n
 
