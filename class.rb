@@ -1128,12 +1128,12 @@ def ben &b
 end
 
 def cop h
-  h = h.clone
+  h = h.dup
 
   h.keys.each {
     |k|
 
-    h[k] = h[k].clone
+    h[k] = h[k].dup
   }
 
   h
