@@ -136,7 +136,9 @@ class R
     #  super(i) || 0
     #end
 
-    @@c = 5172
+    @@c = 4434
+
+    deb :run, @@c, o: true
 
     play b, z, n
 
