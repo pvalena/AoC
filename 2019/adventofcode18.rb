@@ -118,7 +118,7 @@ class R
 
         if q == Q[:start]
 
-          b[r] = true
+          b[r] = q
           z = r
           next
 
@@ -136,71 +136,115 @@ class R
     #  super(i) || 0
     #end
 
-    @@c = 2946
+    @@c = @a || 2942
 
     deb :run, @@c, o: true
 
     cln b, z
 
-    out b, z, o: true
+    out b, z, h: true, d: 1 #, o: true
 
-#    t = tp b, z
-    t = {}
+    t = tp b
+#    err :t, t
 
     h = cpat b
+
+    b[z] = true
 
     play b, z, n, h, t
 
     @@c
   end
 
-  def tp b, z, t = {}
+  def tp b, t = {}
 
     g = []
   
     b.each {
       |k, v|
 
-      next if t[k]
-
       next unless v == true
 
-      r = pat(b, k)
-
-      n = \
-      r.select {
-        |o|
-
-        b[o] == true
-      }
-
-      next unless n.one?
-
-      t[k] = wlk b, k
+      star b, k, t
     }
 
-    err :tp, t
+#    err :tp, t
     t
 
   end
 
-  def wlk b, k, c = 0
+  def star b, k, t, q = []
 
-    r = pat(b, k)
+    ass :star, k, t, q, isa?(k), ish?(t), isa?(q)
 
-    n = \
-    r.select {
+    return if t[k]
+
+    r = pat(b, k) - q
+
+    n = []
+
+    r.select! {
       |o|
 
-      b[o] == true
+      if b[o] == true
+
+        n << o
+        false
+
+      else
+
+        true
+
+      end
     }
 
-    n = \
-    r.select {
-      |o|
+    if n.one? && r.size <= 1
 
-      b[o] == true
-    }
+      v = wlk b, k, r
+
+      t[k] = v if v
+
+      return
+    end
+
+    if (r + n).size > 2
+
+      n.each {
+        |o|
+
+#        next unless pat(b, o) - [k]
+
+        v = wlk b, o, [k]
+
+        t[o] = v if v
+
+#        err :rn, k, o, v unless v.nil? || [[1, 3]].include?(k)
+      }
+
+    end
+  end
+
+  def wlk b, k, q, c = 0
+
+#    deb :wlk, k
+#    out b, k
+
+    while b[k] == true
+
+      r = pat(b, k) - q
+
+#      err :r, r, q
+
+      break unless r.one?
+
+      q = [k]
+      k = r[0]
+      c += 1
+    end
+
+    return unless c > 1
+
+    [k, c, q]
   end
 
   def play b, z, n, h, t, c = 0, q = [], k = [], r = []
@@ -218,16 +262,20 @@ class R
       if x
         z  = x[0]
         c += x[1]
-      end
+        q  = x[2]
 
-      dss :play, c, z, n, k, q, l: true
-      out b, z
+#        deb :x, z, q
+#        out b, z
+      end
 
       bz = b[z]
 
       unless bz == true
 
         return unless bz
+
+        dss :play, c, z, n, l: true
+        out b, z
 
         if key? bz
 
@@ -242,6 +290,13 @@ class R
             deb :c, c, o: true
             return
           end
+
+        else
+        
+          ass :door, bz, door?(bz)
+
+          return unless open?(bz, k)
+
         end
 
         b[z] = true
@@ -355,11 +410,18 @@ class R
 
   end
 
-  def open? k, a
+  def door? k
 
     k && k != true \
-      && k == k.upcase \
-      && ( a.nil? || a.include?(k.downcase) )
+      && k == k.upcase
+
+  end
+
+  def open? k, a
+
+    door?(k) \
+      && \
+    ( a.nil? || a.include?(k.downcase) )
 
   end
 
@@ -385,7 +447,7 @@ class R
     s = s.keys
     t = t.keys
  
-    super(f, s, t, fc: fc, sc: sc, tc: tc, **h) #, d: 1) #, h: true)
+    super(f, s, t, fc: fc, sc: sc, tc: tc, b: true, **h) #, d: 1) #, h: true)
   end
 end
 
