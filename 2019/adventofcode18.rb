@@ -136,7 +136,7 @@ class R
     #  super(i) || 0
     #end
 
-    @@c = 3124
+    @@c = 2946
 
     deb :run, @@c, o: true
 
@@ -144,12 +144,66 @@ class R
 
     out b, z, o: true
 
-    play b, z, n
+#    t = tp b, z
+    t = {}
+
+    h = cpat b
+
+    play b, z, n, h, t
 
     @@c
   end
 
-  def play b, z, n, c = 0, q = [], k = [], r = []
+  def tp b, z, t = {}
+
+    g = []
+  
+    b.each {
+      |k, v|
+
+      next if t[k]
+
+      next unless v == true
+
+      r = pat(b, k)
+
+      n = \
+      r.select {
+        |o|
+
+        b[o] == true
+      }
+
+      next unless n.one?
+
+      t[k] = wlk b, k
+    }
+
+    err :tp, t
+    t
+
+  end
+
+  def wlk b, k, c = 0
+
+    r = pat(b, k)
+
+    n = \
+    r.select {
+      |o|
+
+      b[o] == true
+    }
+
+    n = \
+    r.select {
+      |o|
+
+      b[o] == true
+    }
+  end
+
+  def play b, z, n, h, t, c = 0, q = [], k = [], r = []
 
     b = b.dup
     k = k.dup
@@ -159,12 +213,21 @@ class R
 
       return if @@c <= c
 
+      x = t[z]
+
+      if x
+        z  = x[0]
+        c += x[1]
+      end
+
       dss :play, c, z, n, k, q, l: true
       out b, z
 
       bz = b[z]
 
       unless bz == true
+
+        return unless bz
 
         if key? bz
 
@@ -188,7 +251,18 @@ class R
 
   #    err :b, b
 
-      w = pat(b, z, k) - q - r
+      # Path cache
+      w = h[ z ]
+      
+      w -= q + r
+
+      w.select! {
+        |o|
+
+        bo = b[o]
+
+        bo == true || key?(bo) || open?(bo, k)
+      }
 
       case w.size
 
@@ -208,23 +282,21 @@ class R
 
         g = (q + w + [z]).uniq
 
-        play b, v, n, c + 1, g, k, r + [z]
+        play b, v, n, h, t, c + 1, g, k, r + [z]
       }
 
       return
     end
   end
 
-  def pat b, z, k = nil
+  def pat b, z
 
     D.map {
       |g|
 
       o = nex g, z
 
-      bo = b[o]
-
-      next unless bo == true || key?(bo) || open?(bo, k)
+      next unless b[o]
 
       o
 
@@ -232,23 +304,46 @@ class R
 
   end
 
-  def cln b, z
+  def cpat b
+    hsh {
+      |_, i|
 
-    loop do
-      break unless \
-      b.any? {
+      pat(b, i)
+    }
+  end
+
+  def cln b, z, h = nil
+
+    f = true
+
+    while f
+      f = false
+
+      b.each {
         |k, v|
 
         next unless v == true
 
         next if k == z
 
-        r = pat(b, k)
+        r = nil
+
+        if h
+
+          r = h[ z ]
+
+        else
+
+          r = pat(b, k)
+
+        end
 
         next unless r.one?
 
+        f = true
         b.delete k
       }
+
     end
 
   end
