@@ -87,10 +87,10 @@ class R
   }
 
   A = [
-    2942,     # 0
-    10_000,   # 1
-    2,        # 2
-    2,        # 3
+    2942,      # 0 - depth limit
+    100_000,   # 1 - size limit
+    3,         # 2 - divider
+    7,         # 3 - depth-first steps
   ]
 
   def run a
@@ -187,7 +187,7 @@ class R
       }.min
 
       z = \
-      if w.size <= A[1] && x >= r / A[2]
+      if x >= r / A[2] && w.size <= A[1]
 
         x += 1
         m += 1
