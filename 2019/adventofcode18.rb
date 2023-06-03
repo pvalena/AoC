@@ -143,7 +143,7 @@ class R
 
     @@c = @a || A[0]
 
-    deb :run, @@c, o: true
+    deb :run, @@c, A[1..], o: true
 
     cln b, z
 
