@@ -158,23 +158,31 @@ class R
 
       n = []
 
-      m = \
-      w.map {
-        |o|
-
-        o[5]
-
-      }.min
-
       x = \
       w.map {
         |o|
 
         o[2]
 
-      }.min
+      }.min + 1
 
-#      deb :m, m, x, o: true
+      m = \
+      w.map {
+        |o|
+
+        o[2] == x ? o[5] : E
+
+      }.min + 1
+
+      z = \
+      if w.size <= 100_000
+        w.map {
+          |o|
+
+          o[5]
+
+        }.min
+      end
 
       y = []
 
@@ -184,13 +192,15 @@ class R
         w.select {
           |o|
 
-          o[2] == x && o[5] == m
+          ( z && o[5] <= z ) || ( o[2] <= x && o[5] <= m )
         }
 
         m += 1
       end
 
       w -= y
+
+      deb :x, x, m, y.size, w.size, o: true
 
       y.each {
         |o|
@@ -204,6 +214,8 @@ class R
 
     @@c
   end
+
+  L = 300_000
 
   def tp b, t = {}
 
@@ -326,7 +338,7 @@ class R
           if n <= 0
             @@c = c
 
-            deb :c, c, o: true
+            deb :c, c, k, o: true
             return
           end
 
