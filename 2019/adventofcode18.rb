@@ -49,8 +49,6 @@ class R
 
             c = 2
 
-            #err :xs, xs
-
             next unless xs[1+c]
 
           when :Each
@@ -85,8 +83,15 @@ class R
   Q = {
     start: :'@',
     wall: :'#',
-    pass: :'.',    
+    pass: :'.',
   }
+
+  A = [
+    2942,     # 0
+    10_000,   # 1
+    2,        # 2
+    2,        # 3
+  ]
 
   def run a
 #    err :a, a
@@ -136,7 +141,7 @@ class R
     #  super(i) || 0
     #end
 
-    @@c = @a || 2942
+    @@c = @a || A[0]
 
     deb :run, @@c, o: true
 
@@ -182,7 +187,7 @@ class R
       }.min
 
       z = \
-      if w.size <= 10_000 && x >= r / 2
+      if w.size <= A[1] && x >= r / A[2]
 
         x += 1
         m += 1
@@ -211,55 +216,55 @@ class R
 
       w -= y
 
+      y = uniq y
+
       deb :x, x, m, y.size, w.size, o: true
 
       y.each {
         |o|
 
-        l = play( *o )
+        l = play( *o, A[3] )
         n += l - [nil] if l
       }
 
       w += n
+    end
+  end
 
-      err :uni, w.size, w.uniq.size unless z
+  def uniq y
+    e = []
 
-      e = []
+    y.map {
+      |o|
 
-      w.map {
-        |o|
+      o[1..2]
 
-        o[1..2]
+    }.uniq.each {
+      |o|
 
-      }.uniq.each {
-        |o|
+      h = \
+      y.select {
+        |g|
 
-        h = \
-        w.select {
-          |g|
-
-          g[1..2] == o
-        }
-
-        h.each {
-          |g|
-
-          h.reject! {
-            |q|
-
-            next if g == q
-
-            same? g, q
-          }
-        }
-
-        e += h
+        g[1..2] == o
       }
 
-#      deb :e, e.size, w.size, o: true
+      h.each {
+        |g|
 
-      w = e
-    end
+        h.reject! {
+          |q|
+
+          next if g == q
+
+          same? g, q
+        }
+      }
+
+      e += h
+    }
+
+    e
   end
 
   def same? x, y
@@ -367,7 +372,7 @@ class R
   # 6 - q - rectently visited
   # 7 - k - keys
   # 8 - r - visited crossroads
-  def play b, z, n, h, t, c = 0, q = [], k = [], r = []
+  def play b, z, n, h, t, c = 0, q = [], k = [], r = [], s = 0
 
     b = b.dup
     k = k.dup
@@ -452,7 +457,21 @@ class R
         [ b, v, n, h, t, c + 1, g, k, r + [z] ]
       }
 
-      return w
+      return w if s <= 0
+
+      s -= 1
+
+      o = []
+
+      w.each {
+        |v|
+
+        l = play( *v, s )
+
+        o += l if l        
+      }
+
+      return o
     end
 
     nil
