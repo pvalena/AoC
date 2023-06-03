@@ -154,7 +154,12 @@ class R
 
 #    err :w, w.size
 
-    r = n
+    lop w, n
+
+    @@c
+  end
+
+  def lop w, r
 
     while w.any?
 
@@ -216,9 +221,60 @@ class R
       }
 
       w += n
+
+      err :uni, w.size, w.uniq.size unless z
+
+      e = []
+
+      w.map {
+        |o|
+
+        o[1..2]
+
+      }.uniq.each {
+        |o|
+
+        h = \
+        w.select {
+          |g|
+
+          g[1..2] == o
+        }
+
+        h.each {
+          |g|
+
+          h.reject! {
+            |q|
+
+            next if g == q
+
+            same? g, q
+          }
+        }
+
+        e += h
+      }
+
+#      deb :e, e.size, w.size, o: true
+
+      w = e
+    end
+  end
+
+  def same? x, y
+
+    return unless x[5] == y[5] && x[7] == y[7]
+
+    if x[7].sort != y[7].sort
+
+      deb :same_x, x[7], l: true, o: true
+      deb :same_y, y[7], l: true, o: true
+
+      err
     end
 
-    @@c
+    true
   end
 
   def tp b, t = {}
@@ -302,15 +358,15 @@ class R
     [k, c, q]
   end
 
-  # b - board
-  # z - position
-  # n - remaining
-  # h - cache
-  # t - teleport
-  # c - steps
-  # q - rectently visited
-  # k - keys
-  # r - visited crossroads
+  # 0 - b - board
+  # 1 - z - position
+  # 2 - n - remaining
+  # 3 - h - cache
+  # 4 - t - teleport
+  # 5 - c - steps
+  # 6 - q - rectently visited
+  # 7 - k - keys
+  # 8 - r - visited crossroads
   def play b, z, n, h, t, c = 0, q = [], k = [], r = []
 
     b = b.dup
