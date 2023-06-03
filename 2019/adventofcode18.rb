@@ -154,6 +154,8 @@ class R
 
 #    err :w, w.size
 
+    r = n
+
     while w.any?
 
       n = []
@@ -164,18 +166,22 @@ class R
 
         o[2]
 
-      }.min + 1
+      }.min
 
       m = \
       w.map {
         |o|
 
-        o[2] == x ? o[5] : E
+        o[2] <= x ? o[5] : E
 
-      }.min + 1
+      }.min
 
       z = \
-      if w.size <= 100_000
+      if w.size <= 10_000 && x >= r / 2
+
+        x += 1
+        m += 1
+
         w.map {
           |o|
 
@@ -214,8 +220,6 @@ class R
 
     @@c
   end
-
-  L = 300_000
 
   def tp b, t = {}
 
