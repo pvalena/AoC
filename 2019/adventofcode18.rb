@@ -142,16 +142,65 @@ class R
 
     cln b, z
 
-    out b, z, h: true, d: 1 #, o: true
+    out b, z
 
     t = tp b
-#    err :t, t
 
     h = cpat b
 
     b[z] = true
 
-    play b, z, n, h, t
+    w = play b, z, n, h, t
+
+#    err :w, w.size
+
+    while w.any?
+
+      n = []
+
+      m = \
+      w.map {
+        |o|
+
+        o[5]
+
+      }.min
+
+      x = \
+      w.map {
+        |o|
+
+        o[2]
+
+      }.min
+
+#      deb :m, m, x, o: true
+
+      y = []
+
+      while y.none?
+
+        y = \
+        w.select {
+          |o|
+
+          o[2] == x && o[5] == m
+        }
+
+        m += 1
+      end
+
+      w -= y
+
+      y.each {
+        |o|
+
+        l = play( *o )
+        n += l - [nil] if l
+      }
+
+      w += n
+    end
 
     @@c
   end
@@ -168,7 +217,6 @@ class R
       star b, k, t
     }
 
-#    err :tp, t
     t
 
   end
@@ -212,13 +260,9 @@ class R
       n.each {
         |o|
 
-#        next unless pat(b, o) - [k]
-
         v = wlk b, o, [k]
 
         t[o] = v if v
-
-#        err :rn, k, o, v unless v.nil? || [[1, 3]].include?(k)
       }
 
     end
@@ -226,14 +270,9 @@ class R
 
   def wlk b, k, q, c = 0
 
-#    deb :wlk, k
-#    out b, k
-
     while b[k] == true
 
       r = pat(b, k) - q
-
-#      err :r, r, q
 
       break unless r.one?
 
@@ -247,15 +286,22 @@ class R
     [k, c, q]
   end
 
+  # b - board
+  # z - position
+  # n - remaining
+  # h - cache
+  # t - teleport
+  # c - steps
+  # q - rectently visited
+  # k - keys
+  # r - visited crossroads
   def play b, z, n, h, t, c = 0, q = [], k = [], r = []
 
     b = b.dup
     k = k.dup
 
     # no-fork
-    loop do
-
-      return if @@c <= c
+    while c < @@c
 
       x = t[z]
 
@@ -263,19 +309,12 @@ class R
         z  = x[0]
         c += x[1]
         q  = x[2]
-
-#        deb :x, z, q
-#        out b, z
       end
 
       bz = b[z]
+      return unless bz
 
       unless bz == true
-
-        return unless bz
-
-        dss :play, c, z, n, l: true
-        out b, z
 
         if key? bz
 
@@ -292,9 +331,8 @@ class R
           end
 
         else
-        
-          ass :door, bz, door?(bz)
 
+          ass :door, bz, door?(bz)
           return unless open?(bz, k)
 
         end
@@ -302,15 +340,17 @@ class R
         b[z] = true
 
         cln b, z
+ 
       end
+
+      dss :play, c, z, n, l: true
+      out b, z
 
   #    err :b, b
 
-      # Path cache
-      w = h[ z ]
+      # Resolve path
+      w = ( h[ z ] - q ) - r
       
-      w -= q + r
-
       w.select! {
         |o|
 
@@ -332,16 +372,18 @@ class R
 
       end
 
-      w.shuffle.each {
+      w.map! {
         |v|
 
         g = (q + w + [z]).uniq
 
-        play b, v, n, h, t, c + 1, g, k, r + [z]
+        [ b, v, n, h, t, c + 1, g, k, r + [z] ]
       }
 
-      return
+      return w
     end
+
+    nil
   end
 
   def pat b, z
@@ -446,8 +488,8 @@ class R
     f = f.keys
     s = s.keys
     t = t.keys
- 
-    super(f, s, t, fc: fc, sc: sc, tc: tc, b: true, **h) #, d: 1) #, h: true)
+
+    super(f, s, t, fc: fc, sc: sc, tc: tc, d: 1, h: true)
   end
 end
 
