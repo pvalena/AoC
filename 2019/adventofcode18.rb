@@ -1,6 +1,6 @@
 #!/usr/bin/env -S ruby
 
-#DEB = false
+DEB = false
 
 require_relative 'class'
 
@@ -87,10 +87,10 @@ class R
   }
 
   A = [
-    2942,      # 0 - depth limit
-    10_000,    # 1 - size limit
-    2,         # 2 - divider
-    3,         # 3 - depth-first steps
+    2748,      # 0 - depth limit
+    5_000,    # 1 - size limit
+    4,         # 2 - divider
+    5,         # 3 - depth-first steps
   ]
 
   def run a
@@ -216,7 +216,7 @@ class R
 
       y = uniq y
 
-      deb :x, x, m, y.size, w.size, o: true
+      deb :lop, x, m, y.size, w.size, o: true
 
       y.each {
         |o|
@@ -360,7 +360,7 @@ class R
   # 9 - m - coords  memory
   def play b, z, n, h, t, c = 0, q = [], k = [], r = [], m = {}, s = 0
 
-    b = b.dup
+    b = cop(b)
     k = k.dup
 
     # no-fork
@@ -414,36 +414,52 @@ class R
   #    err :b, b
 
       # here we are
+      m[z] ||= []
       a = m[z]
 
-      unless a
-        m[z] = [[c, k]]
+      f = []
 
-      else
-        f = false
+      a.each {
+        |ij|
 
-        a.each {
-          |(i, j)|
+        i, j = ij
 
-          if (k & j).size == k.size
+        case kj = (k & j).size
 
-            if c < i
-              err :bet, z, [c, k], ' vs ', [i, j]
+          when k.size
+
+            unless c < i
+              return
 
             else
-              return
+              if kj == j.size
+
+                f << ij
+
+              end
 
             end
 
-          else
-            a << [c, k]
+          when j.size
 
-          end
+            if c < i
+
+              f << ij
+
+            end
+
+        end
+      }
+
+      if f.any?
+        f.each {
+          |v|
+        
+          m.delete(v)
         }
-
-        err :f, f, z, [c, k]
-
       end
+
+      a << [c, k.dup]
 
       ## Resolve path
       w = ( h[ z ] - q ) - r
