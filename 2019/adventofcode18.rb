@@ -87,10 +87,10 @@ class R
   }
 
   A = [
-    2748,      # 0 - depth limit
-    5_000,    # 1 - size limit
-    4,         # 2 - divider
-    5,         # 3 - depth-first steps
+    2684,      # 0 - depth limit
+    1_000,    # 1 - size limit
+    8,         # 2 - divider
+    13,         # 3 - depth-first steps
   ]
 
   def run a
