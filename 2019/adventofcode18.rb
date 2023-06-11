@@ -1,6 +1,6 @@
 #!/usr/bin/env -S ruby
 
-DEB = false
+#DEB = false
 
 require_relative 'class'
 
@@ -88,9 +88,9 @@ class R
 
   A = [
     2942,      # 0 - depth limit
-    100_000,   # 1 - size limit
-    3,         # 2 - divider
-    7,         # 3 - depth-first steps
+    10_000,    # 1 - size limit
+    2,         # 2 - divider
+    3,         # 3 - depth-first steps
   ]
 
   def run a
@@ -165,9 +165,7 @@ class R
   end
 
   def lop w, r
-
     while w.any?
-
       n = []
 
       x = \
@@ -268,22 +266,10 @@ class R
   end
 
   def same? x, y
-
-    return unless x[5] == y[5] && x[7] == y[7]
-
-    if x[7].sort != y[7].sort
-
-      deb :same_x, x[7], l: true, o: true
-      deb :same_y, y[7], l: true, o: true
-
-      err
-    end
-
-    true
+    x[5] == y[5] && x[7] == y[7]
   end
 
   def tp b, t = {}
-
     g = []
   
     b.each {
@@ -295,7 +281,6 @@ class R
     }
 
     t
-
   end
 
   def star b, k, t, q = []
@@ -372,7 +357,8 @@ class R
   # 6 - q - rectently visited
   # 7 - k - keys
   # 8 - r - visited crossroads
-  def play b, z, n, h, t, c = 0, q = [], k = [], r = [], s = 0
+  # 9 - m - coords  memory
+  def play b, z, n, h, t, c = 0, q = [], k = [], r = [], m = {}, s = 0
 
     b = b.dup
     k = k.dup
@@ -380,6 +366,7 @@ class R
     # no-fork
     while c < @@c
 
+      # teleport
       x = t[z]
 
       if x
@@ -391,11 +378,14 @@ class R
       bz = b[z]
       return unless bz
 
+      # pick up or open
       unless bz == true
 
         if key? bz
 
           k << bz
+          k.sort!
+
           n -= 1
           q = []
           r = []
@@ -408,7 +398,6 @@ class R
           end
 
         else
-
           ass :door, bz, door?(bz)
           return unless open?(bz, k)
 
@@ -417,7 +406,6 @@ class R
         b[z] = true
 
         cln b, z
- 
       end
 
       dss :play, c, z, n, l: true
@@ -425,7 +413,39 @@ class R
 
   #    err :b, b
 
-      # Resolve path
+      # here we are
+      a = m[z]
+
+      unless a
+        m[z] = [[c, k]]
+
+      else
+        f = false
+
+        a.each {
+          |(i, j)|
+
+          if (k & j).size == k.size
+
+            if c < i
+              err :bet, z, [c, k], ' vs ', [i, j]
+
+            else
+              return
+
+            end
+
+          else
+            a << [c, k]
+
+          end
+        }
+
+        err :f, f, z, [c, k]
+
+      end
+
+      ## Resolve path
       w = ( h[ z ] - q ) - r
       
       w.select! {
@@ -452,9 +472,11 @@ class R
       w.map! {
         |v|
 
+        # Per coords-Memory
+
         g = (q + w + [z]).uniq
 
-        [ b, v, n, h, t, c + 1, g, k, r + [z] ]
+        [ b, v, n, h, t, c + 1, g, k, r + [z], m ]
       }
 
       return w if s <= 0
@@ -478,7 +500,6 @@ class R
   end
 
   def pat b, z
-
     D.map {
       |g|
 
@@ -489,7 +510,6 @@ class R
       o
 
     } - [nil]
-
   end
 
   def cpat b
