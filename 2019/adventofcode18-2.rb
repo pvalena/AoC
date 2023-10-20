@@ -1,6 +1,6 @@
 #!/usr/bin/env -S ruby
 
-DEB = false
+#DEB = false
 
 require_relative 'class'
 
@@ -87,17 +87,17 @@ class R
   }
 
   A = [
-    2684,      # 0 - depth limit
-    1_000,    # 1 - size limit
+    12684,     # 0 - depth limit
+    1_000,     # 1 - size limit
     8,         # 2 - divider
-    13,         # 3 - depth-first steps
+    0,         # 3 - depth-first steps
   ]
 
   def run a
 #    err :a, a
   
     b = {}
-    z = nil
+    z = []
     n = 0
 
     a.each_with_index {
@@ -124,7 +124,7 @@ class R
         if q == Q[:start]
 
           b[r] = q
-          z = r
+          z << r
           next
 
         end
@@ -134,7 +134,17 @@ class R
       }
     }
 
-#    err :b, z, n
+    if z.one?
+      r = z[0]
+    
+      z = cor r
+
+      pat(b, r).each {
+        |v|
+
+        b.delete v
+      }
+    end
 
     #def a.[](i)
     #  err :oor, i if isi?(i) && i < 0
@@ -143,7 +153,7 @@ class R
 
     @@c = @a || A[0]
 
-    deb :run, @@c, A[1..], o: true
+    deb :run, @@c, z, A[1..], o: true
 
     cln b, z
 
@@ -153,11 +163,15 @@ class R
 
     h = cpat b
 
-    b[z] = true
+    z.each {
+      |v|
 
-    w = play b, z, n, h, t
+      b[v] = true
+    }
 
-#    err :w, w.size
+    w = strat b, z, n, h, t
+
+    err :w, w, w.size
 
     lop w, n
 
@@ -221,7 +235,7 @@ class R
       y.each {
         |o|
 
-        l = play( *o, A[3] )
+        l = strat( *o, A[3] )
         n += l - [nil] if l
       }
 
@@ -281,6 +295,26 @@ class R
     }
 
     t
+  end
+
+  def cor z
+    a, b = z
+
+    w = []
+  
+    [-1,1].each {
+      |y|
+
+      
+      [-1,1].each {
+        |x|
+
+        w << [a+x, b+y]
+
+      }
+    }
+
+    w     
   end
 
   def star b, k, t, q = []
@@ -348,6 +382,36 @@ class R
     [k, c, q]
   end
 
+  def strat b, z, *k
+
+    deb :strat, z
+
+    w = []
+
+    z.each_with_index {
+      |v|
+
+#      out b, v
+#      err :v, v
+
+      e = play(b, v, *k)
+
+      next unless e
+
+      err :e, e 
+
+      e.map {
+        |g|
+
+        err :g, g
+
+      }
+
+    }
+
+    err :strat, w.size, w
+  end
+
   # 0 - b - board
   # 1 - z - position
   # 2 - n - remaining
@@ -413,53 +477,55 @@ class R
 
   #    err :b, b
 
-      # here we are
-      m[z] ||= []
-      a = m[z]
+      unless true
+        # here we are
+        m[z] ||= []
+        a = m[z]
 
-      f = []
+        f = []
 
-      a.each {
-        |ij|
+        a.each {
+          |ij|
 
-        i, j = ij
+          i, j = ij
 
-        case kj = (k & j).size
+          case kj = (k & j).size
 
-          when k.size
+            when k.size
 
-            unless c < i
-              return
+              unless c < i
+                return
 
-            else
-              if kj == j.size
+              else
+                if kj == j.size
+
+                  f << ij
+
+                end
+
+              end
+
+            when j.size
+
+              if c < i
 
                 f << ij
 
               end
 
-            end
-
-          when j.size
-
-            if c < i
-
-              f << ij
-
-            end
-
-        end
-      }
-
-      if f.any?
-        f.each {
-          |v|
-        
-          m.delete(v)
+          end
         }
-      end
 
-      a << [c, k.dup]
+        if f.any?
+          f.each {
+            |v|
+          
+            m.delete(v)
+          }
+        end
+
+        a << [c, k.dup]
+      end
 
       ## Resolve path
       w = ( h[ z ] - q ) - r
@@ -496,6 +562,9 @@ class R
       }
 
       return w if s <= 0
+
+      # Depth 1 always => strategy instead
+      err :depth, s
 
       s -= 1
 
@@ -597,7 +666,10 @@ class R
   def out f, t, **h
 
     @outc = nil
-    t = { t => nil }
+
+    if isi?(t[0])
+      t = { t => nil }
+    end
 
     fc = '.'.colorize :lightblue
     sc = 'x'.colorize :green
@@ -614,7 +686,7 @@ class R
 
     f = f.keys
     s = s.keys
-    t = t.keys
+    t = t.keys if ish?(t)
 
     super(f, s, t, fc: fc, sc: sc, tc: tc, d: 1, h: true)
   end
