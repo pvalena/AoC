@@ -42,6 +42,21 @@ N = 100_000_000.freeze
 # For timestamps
 T = [Time.now]
 
+B = [
+  :zero,
+  :one,
+  :two,
+  :three,
+  :four,
+  :five,
+  :six,
+  :seven,
+  :eight,
+  :nine,
+  :ten,
+#  :teen,
+]
+
 # Deep freeze $1
 # Goind down on elemnts which understand :each
 #
