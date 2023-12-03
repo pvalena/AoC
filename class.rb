@@ -22,9 +22,7 @@ if defined?(ap)
   alias :pp :ap
 end
 
-## Constans
-
-# list: %w{ DEB M E N S D D3 C T }
+## Constants
 
 # Debug mode! On by default
 # used for deb() calls
@@ -37,7 +35,7 @@ M = 45000.freeze
 E = 999_999_999_999.freeze
 
 # Number to divide by for sampling
-N = 100_000_000.freeze
+V = 100_000_000.freeze
 
 # For timestamps
 T = [Time.now]
@@ -55,8 +53,9 @@ B = [
   :nine,
   :ten,
 #  :teen,
-]
+].freeze
 
+## Helper
 # Deep freeze $1
 # Goind down on elemnts which understand :each
 #
@@ -75,6 +74,9 @@ def dfr a
 
   }.freeze
 end
+
+# Chars 0 to 9
+N = dfr ('0'..'9').to_a
 
 # :a to :z symbols in an array
 S = dfr (:a..:z).to_a
@@ -1142,13 +1144,14 @@ def ben &b
   deb :b, b.real, o: true
 end
 
+# Copy hash; dup keys and values
 def cop h
   h = h.dup
 
   h.keys.each {
     |k|
 
-    h[k] = h[k].dup
+    h[k.dup] = h[k].dup
   }
 
   h
@@ -1414,7 +1417,7 @@ def inparallel a, o: false, **k
   s
 end
 
-def sam i, *z, q: N, r: 0, l: :sam
+def sam i, *z, q: V, r: 0, l: :sam
   if i % q == r
 
     z.unshift l unless iss?(z.first)

@@ -3,7 +3,7 @@
 set -e
 zsh -n "$0"
 
-export RUBYOPT='--jit'
+#export RUBYOPT='--jit'
 export RUBY_THREAD_VM_STACK_SIZE=15000000
 
 u="ulimit -s"
