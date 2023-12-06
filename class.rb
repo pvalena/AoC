@@ -99,6 +99,21 @@ D = dfr \
     k
   }
 
+# Area of 2d coords
+A = dfr \
+  (-1..1).inject([]) {
+    |c, x|
+
+    (-1..1).each {
+      |y|
+
+      c << [x, y] unless x == 0 && 0 == y
+
+    }
+
+    c
+  }
+
 # Directions in 3d array as 3d coords
 # - left, right, up, down, towards, backwards
 D3 = dfr \
@@ -730,6 +745,37 @@ def bum b, n = 0, a = 1, m = 9
     c = true
     b[j] = a
   }
+end
+
+# 2d area lookup in Hash table using keys as coords
+# $1 = Hash table
+# $2 = Key
+# $3 = Offsets array
+# $4 = Clone Hash for every run
+#
+# Return array with entries which block returned.
+# nil = ignore
+def are a, k, c = A, n: false, &b
+
+  a = cop a if n
+
+  z = []
+
+  c.each {
+    |o|
+
+    x = nex k, o
+
+    v = a[x]
+
+    next unless v
+
+    w = yield x, v
+
+    z << w if w
+  }
+
+  z
 end
 
 # Sum all entries in array
