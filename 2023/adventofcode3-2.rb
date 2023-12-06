@@ -95,8 +95,6 @@ class R
 #
 #        a[n][t] -= [[nil,nil]]
 
-      
-
       end
     }
 
@@ -104,18 +102,6 @@ class R
       @run = run a
     }
   end
-
-  Q = {
-    start: :'@',
-    wall: :'#',
-    pass: :'.',
-  }
-
-  A = {
-    :red => 1,
-    :green => 1,
-    :blue => 1
-  }
 
   def run a
 #    err :a, a
@@ -144,22 +130,6 @@ class R
     #  super(i) || 0
     #end
 
-    r = (-1..1)
-
-    c = []
-
-    r.each {
-      |x|
-
-      r.each {
-        |y|
-
-        c << [x, y] unless x == 0 && 0 == y
-
-      }
-
-    }
-
     s = 0
 
     b.keys.map {
@@ -169,7 +139,7 @@ class R
 
       next unless v == ?*
 
-      w = gea b, k, c
+      w = gea b, k
 
 #      dss :w, w, isi?(w), w > 0
 
@@ -179,7 +149,7 @@ class R
     s
   end
 
-  def gea b, k, c
+  def gea b, k, c = A
 
     b = cop b
 
