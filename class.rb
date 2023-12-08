@@ -17,6 +17,7 @@ safe_req 'ap'
 safe_req 'benchmark'
 safe_req 'stringio'
 safe_req 'parallel'
+safe_req 'irb'
 
 if defined?(ap)
   alias :pp :ap
@@ -640,7 +641,7 @@ def deb *i, o: false, l: nil
 end
 
 # Run irb with context $*
-def irb *a
+def irb *a #= nil
   require 'irb'
   binding.irb
 end
