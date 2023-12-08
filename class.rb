@@ -179,7 +179,7 @@ def inp(nn = nil, ss = nil, gg = nil, tt = nil,
 
       l = o.chomp
 
-      l.gsub!(/[,.:;]/,' ') if g
+      l.gsub!(/[()=,.:;]/,' ') if g
 
       #l = s ? l.split : [l]
 
