@@ -1250,6 +1250,37 @@ def lin f, t
   z
 end
 
+# Coords based recursive search
+# $1 = Hash
+# $2 = coords
+# $3 = result
+# $4 = directions
+# &b
+def rcs a, k, s = [], c = A, r = [], &b
+
+  v = a[k]
+
+  return s unless v
+
+#  deb :rcs, k, v, s, r, l: true
+
+  v = yield k, v, s
+
+  return s unless v
+
+  a.delete(k)
+
+  c.each {
+    |o|
+
+    x = nex k, o
+
+    rcs a, x, s, c, [k] + r, &b
+  }
+
+  s
+end
+
 # Return maximum from
 # values in the second column of 2d array
 # $1: array
