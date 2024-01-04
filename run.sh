@@ -21,7 +21,19 @@ m=
 SLP=0
 cmd () {
   : "cmd: $1 $2 $3 $4"
-  local q="${1} data${2}${3:+-t}.txt ${4} ${5} ${6} ; echo ; sleep ${SLP}"
+
+  local _x="$1"
+
+  [[ -n "$zg" ]] && {
+#    _x="zig run $x --"
+    _x="zig test -freference-trace $x"
+    :
+  } || {
+    _x="${_x} data${2}${3:+-t}.txt"
+  }
+  [[ -n "$zg" ]] && _x="zig test -freference-trace $x"
+
+  local q="${_x} ${4} ${5} ${6} ; echo ; sleep ${SLP}"
 
   [[ -z "$m" ]] || {
     q="time { ${q}; }"
@@ -68,10 +80,17 @@ p=${2:-}
 
 : "args: i=$i p=$p"
 
-x="./${f}${i}${p:+-$p}.rb"
+zg=
+for ext in rb zig; do
+  x="./${f}${i}${p:+-$p}.${ext}"
+  [[ -r "$x" ]] || continue
+  [[ ! -x "$x" && $ext == 'rb' ]] && chmod +x "$x"
+
+  [[ $ext == 'zig' ]] && zg=y
+  break
+done
 
 [[ -r "$x" ]] || exit 7
-[[ -x "$x" ]] || chmod +x "$x"
 
 [[ -n "$t" ]] \
   && c="r=\"\$(`cmd $x $i ${t:-''} $n` 2>&1 | tee -a /dev/stderr | { grep '^=>' | cut -d' ' -f2-} 2>/dev/null; )\" && [[ \"$t\" == \"\$r\" ]] && echo" \
