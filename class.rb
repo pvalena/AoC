@@ -171,7 +171,7 @@ def inp(nn = nil, ss = nil, gg = nil, tt = nil,
   puts if DEB
 
   f = File.open(f) if f.kind_of?(String)
-  
+
   f .readlines
     .each_with_index
     .map {
