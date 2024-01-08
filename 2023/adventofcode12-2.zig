@@ -35,13 +35,19 @@ fn puts(d: anytype) void {
     stdout.print("{s}\n", .{d}) catch {};
 }
 
+fn putd(d: anytype) void {
+    if (dbg) debug.print("{s}\n", .{d});
+}
+
 fn err(comptime l: anytype, d: anytype) !void {
-    debug.print("\n", .{});
-
     dbg = true;
-    deb("Error[" ++ l ++ "]", d, "any");
+    putd("");
 
-    debug.print("\n", .{});
+    const s = "Error[" ++ l ++ "]";
+
+    deb(s, d, "any");
+
+    putd("");
 
     return error.err;
 }
@@ -51,7 +57,6 @@ fn res(d: anytype, comptime t: anytype) void {
     stdout.print("\n => {" ++ t ++ "}\n\n", .{d}) catch |e| {
         err("res", @errorName(e)) catch {};
     };
-    
 }
 
 // Logic
@@ -64,7 +69,7 @@ fn ini(al: anytype, tf: anytype) ![]u8 {
     const f = args.next() orelse tf;
 
     if (f.len == 0) {
-        try err("Missing Arg", "Filename");
+        try err("Missing Arg: Filename", null);
     }
 
     const d = try std.fs.cwd().readFileAlloc(al, f, std.math.maxInt(usize));
@@ -134,115 +139,317 @@ fn par(al: anytype, d: []u8) !Array(D) {
             defer i += 1;
             if (w.len == 0) continue;
 
-            // First
-            if (i == 0) {
-//                deb("First", w, "s");
-
-                var r = T.fre;
-
-                for (w) |v| {
-
-                    const t = switch(v) {
-                        '#' => T.set,
-                        '?' => T.unk,
-                        '.' => T.fre,
-
-                        else => return error.type
-                    };
-
-                    defer r = t;
-
-                    if (r != t or t != T.fre) {
-                        try x.f.append(t);
-                        try x.c.append(T.fre);
-                    }
-                }
-
-                continue;
-            }
-
-            // Second
-//            deb("Second", "", "s");
-
-            var ns = split(u8, w, ",");
-
-            while (ns.next()) |n| {
-                if (n.len == 0) continue;
-
-                if (n[0] >= '0' and n[0] <= '9') {
-                    const v = fmt.parseUnsigned(u64, n, 10) catch |e| {
-                        err("Invalid int", n) catch {};
-
-                        return e;
-                    };
-
-//                    deb("Number", v, "d");
-
-                    try x.s.append(v);
-                    try x.x.append(v);
-
-                } else {
-                    try err("Invalid number", n);
-
-                }
-            }
+            x = try dat(x, w, i);
         }
-
         try a.append(x);
-
     }
 
     return a;
+}
+
+fn dat(y: anytype, w: anytype, i: anytype) !D {
+
+    var x = y;
+
+    if (i == 0) {
+        var f = true;
+
+        for (0..5) |m| {
+            for (w) |v| {
+                const t = switch(v) {
+                    '#' => T.set,
+                    '?' => T.unk,
+                    '.' => T.fre,
+
+                    else => return error.type
+                };
+
+                if (!(f and t == T.fre)) {
+                    try x.f.append(t);
+                    try x.c.append(T.fre);
+
+                    f = false;
+                }
+            }
+
+            if (m < 4) {
+                try x.f.append(T.unk);
+                try x.c.append(T.fre);
+            }
+        }
+
+        return x;
+    }
+
+    for (0..5) |_| {
+        var ns = split(u8, w, ",");
+
+        while (ns.next()) |n| {
+            if (n.len == 0) continue;
+
+            if (n[0] >= '0' and n[0] <= '9') {
+                const v = fmt.parseUnsigned(u64, n, 10) catch |e| {
+                    err("Invalid int", n) catch {};
+
+                    return e;
+                };
+
+    //            deb("Number", v, "d");
+
+                try x.s.append(v);
+                try x.x.append(v);
+
+            } else {
+                try err("Invalid number", n);
+
+            }
+        }
+    }
+
+    return x;
 }
 
 fn run(d: anytype) !u64 {
 
     var r: u64 = 0;
 
-    for (d.items) |x| {
+//    const b = 1;
+    const b = 1000_000;
+    const odbg = dbg;
+
+    for (d.items, 0..) |x, i| {
 
         const f = x.f.items;
         const c = x.c.items;
         const s = x.s.items;
         const z = x.x.items;
 
+        assert(f.len > 0);
+        assert(c.len > 0);
+        assert(s.len > 0);
+        assert(z.len > 0);
+
 //        out("run", f, s);
 
         var v: u64 = 0;
+
+        dbg = if (i >= b and odbg) true else false;
 
         try bum(f, c, s, z, &v);
 //        try rcs(f, c, 0, s, 0, 0, &v, T.unk);
 
         r += v;
 
-        deb("v", v, "");
-        if (dbg) debug.print("\n", .{});
+        try stdout.print("v: {}, {}\n\n", .{i, v});
+
+//        puts("v", v, "");
+//        if (dbg) debug.print("\n", .{});
+
+        if (i >= b) break;
     }
 
     return r;
 }
 
 fn out(comptime l: anytype, f: anytype, s: ?[]u64) void {
-    if (dbg) {
-        debug.print(l ++ ": ", .{});
-        for (f) |t| {
-            const v: u8 = switch(t) {
-                T.set => '#',
-                T.unk => '?',
-                T.fre => '.',
-            };
+    if (!dbg) return;
 
-            debug.print("{c}", .{v});
+    debug.print(l ++ ": ", .{});
+    for (f) |t| {
+        const v: u8 = switch(t) {
+            T.set => '#',
+            T.unk => '?',
+            T.fre => '.',
+        };
+
+        debug.print("{c}", .{v});
+    }
+
+    if (s) |ss| {
+        debug.print(" <- ", .{});
+
+        for (ss) |v| {
+            debug.print("{} ", .{v});
         }
+    }
+    debug.print("\n", .{});
+}
 
-        if (s) |ss| {
-            debug.print(" <- ", .{});
+fn eut(comptime l: anytype, f: anytype, s: ?[]u64) !void {
+    out(l, f, s);
+    try err("", null);
+}
 
-            for (ss) |v| {
-                debug.print("{} ", .{v});
-            }
+fn lin(comptime l: anytype, i: anytype) void {
+    if (!dbg) return;
+
+    debug.print(l ++ ": ", .{});
+
+    for (0..i) |_| {
+        debug.print(" ", .{});
+    }
+
+    debug.print("^ {}\n", .{i});
+}
+
+fn set(
+    c: anytype, i: anytype,
+    t: anytype
+) !void {
+
+    assert(i < c.len);
+
+    _ = switch(t) {
+        T.set => assert(c[i] == T.fre),
+        T.fre => assert(c[i] == T.set),
+
+        else => {
+            try err("set", t);
         }
-        debug.print("\n", .{});
+    };
+
+    c[i] = t;
+}
+
+fn mov(
+    c: anytype,
+    ii: u64, ee: u64,
+    o: anytype
+) !void {
+    var i = ii;
+    var e = ee;
+
+    if (o >= c.len) {
+        try err("tar", o);
+    }
+
+    assert(c[o] == T.fre);
+    assert(e < o);
+    assert(i <= e);
+    assert(c[e] == T.set);
+    assert(c[i] == T.set);
+
+    while (e < o) {
+        e += 1;
+
+        try set(c, e, T.set);
+        try set(c, i, T.fre);
+
+        i += 1;
+    }
+
+    e += 1;
+
+    if (e < c.len and c[e] == T.set) {
+//        lin("  e", e);
+
+        i = e;
+
+        while (e+1 < c.len and c[e+1] == T.set)
+            e += 1;
+
+        assert(e + 1 < c.len);
+        assert(c[e+1] == T.fre);
+
+        try mov(c, i, e, e+1);
+
+    } else {
+        out("mov", c, null);
+
+    }
+}
+
+fn beg(
+    c: anytype,
+    ii: anytype
+
+) !u64 {
+    var i = ii;
+
+    while (i > 0 and c[i-1] == T.set) {
+        i -= 1;
+    }
+
+    if (c[i] != T.set) {
+        try err("beg", i);
+    }
+
+    return i;
+}
+
+fn fre(
+    c: anytype,
+    o: anytype
+
+) !void {
+    var i = o;
+
+    lin("fre", i);
+
+    // Find set //
+    while (i > 0 and c[i] != T.set) {
+        i -= 1;
+    }
+
+    const e = i;
+
+    if (c[e] != T.set) {
+        try err("end", i);
+    }
+
+    i = try beg(c, i);
+    
+    try mov(c, i, e, o);
+}
+
+fn ful(
+    c: anytype,
+    ii: anytype
+
+) !void {
+    var i = ii;
+
+    lin("ful", i);
+
+    if (c[i] != T.set) {
+        try err("", i);
+    }
+
+    // Start //
+    const b = try beg(c, i);
+
+    // End //
+    while (i+1 < c.len and c[i+1] == T.set) {
+        i += 1;
+    }
+
+    if (c[i] != T.set) {
+        try err("end", i);
+    }
+
+    try mov(c, b, i, i+1);
+}
+
+fn fix(
+    f: anytype, c: anytype,
+) !void {
+    var i: u64 = 0;
+
+    for (f, 0..) |v, j| {
+        const w = c[j];
+
+        if (w == v or v == T.unk) continue;
+
+        i = j;
+        break;
+    }
+
+    if (c[i] == T.fre) {
+        try fre(c, i);
+
+    } else {
+        try ful(c, i);
+
     }
 }
 
@@ -257,7 +464,6 @@ fn bum(
     var p = T.fre;
 
     for (s) |w| {
-
         while (f[i] == T.fre) i += 1;
 
         for (0..w) |_| {
@@ -268,51 +474,15 @@ fn bum(
         i += 1;
     }
 
-//    out("bum", c, null);
+    out("org", f, s);
+    out("bum", c, null);
 
-    // Lookup //
     while(!val(f, c)) {
-        
-        i = 0;
+        try fix(f, c);
+    }
 
-        for (f, 0..) |v, j| {
-            const w = c[j];
-
-            if (w == v or v == T.unk) continue;
-
-//            deb("j", j, "");
-
-            i = j;
-
-            if (v == T.fre) {
-                while (i > 0 and c[i] != T.set) i -= 1;
-            }
-
-            while (i > 0 and c[i-1] == T.set) i -= 1;
-
-            break;
-        }
-
-        if (c[i] != T.set)
-            try err("i", i);
-
-        p = T.fre;
-
-        while (i < c.len) {
-
-            const t = c[i];
-
-            c[i] = p;
-
-            p = t;
-
-            i += 1;
-        }
-
-        if (p == T.set)
-            try err("set", i);
-
-//        out("fix", c, null);
+    if (!val(f, c)) {
+        try err("val", i);
     }
 
     // Trim left //
@@ -332,34 +502,40 @@ fn bum(
     }
 
     // Trim right //
-    i = c.len-1;
+    i = c.len - 1;
 
-    while (i > 0) {
-        defer i -= 1;
-
+    while (true) {
         const v = f[i];
         const w = c[i];
 
-        if (v == w) continue;
+        if (v == w) {
+            if (i < 1) break;
+
+            i -= 1;
+            continue;
+        }
 
         if (v == T.unk and w == T.set) {
-
             f[i] = w;
-            continue;
+
+            if (i > 0) {
+                i -= 1;
+                continue;
+            }
         }
 
         break;
     }
 
-    out("new", f, s);
+    putd("");
+    out("new", f, null);
 
     if (!val(f, c)) {
         try err("val", i);
     }
 
+//    if (val(f, c)) 
     r.* += 1;
-
-//    i = c.len-1;
 
     p = T.fre;
 
@@ -367,59 +543,95 @@ fn bum(
 
     for (c, 0..) |v, j| {
 
-        defer p = v;
-
         if (v == T.set and p == T.fre) {
 
-            defer k += 1;
+            if (k >= x.len) {
+                out("xxx", c, x);
+                lin("  k", j);
+                try err("", k);
+            }
+
             x[k] = j;
+            k += 1;
         }
+
+        p = v;
     }
 
-    out("bum", c, x);
+    out("   ", c, x);
 
-    // wiggle //
-    for (x, 0..) |_, j| {
-        try wig(x, s, j, c, f, r);
-    }
+//    for (x, 0..) |_, t| {
+//        deb("  t", t, "");
+//
+//        try wig(x, s, t, c, f, r);
+//    }
+
+    // Last moves + chain reaction //
+    try wig(x, s, x.len-1, c, f, r, true);
 }
 
 fn wig (
     x: anytype, s: anytype,
     j: anytype,
     c: anytype, f: anytype,
-    r: anytype
+    r: anytype, o: anytype
+
 ) !void {
+
+    // Head //
     var k = x[j];
+
+    // Tail+1 //
     var l = k + s[j];
 
+    // Not moved //
+    if (j > 0) {
+        var y = [_]u64{2};
+        out("   ", c, &y);
+
+        try wig(x, s, j-1, c, f, r, false);
+    }
+
     while (
-        l < f.len and c[l] == T.fre and
-        ( (l+1 < f.len and c[l+1] == T.fre) or l+1 == f.len )        
+        (l < c.len and c[l] == T.fre) and
+        (l+1 == c.len or (l+1 < c.len and c[l+1] == T.fre))
     ) {
-        c[l] = T.set;
-        c[k] = T.fre;
+        // Walk //
+        try set(c, k, T.fre);
+        try set(c, l, T.set);
 
-        out("wig", c, null);
+        const p = (
+            (f[l] == T.set or f[l] == T.unk) and
+            (f[k] == T.fre or f[k] == T.unk)
+        );
 
-        if (val(f, c))
-            r.* += 1;
+        if (p or o) {
+            var z = [_]u64{0};
+            if (val(f, c)) {
+                r.* += 1;
+                z[0] = 1;
+                out("   ", c, &z);
+            }
 
-        if (j > 0)
-            try wig(x, s, j-1, c, f, r);
+            if (j > 0) {
+                try wig(x, s, j-1, c, f, r, false);
+            }
+        }
 
+        // Index //
         k += 1;
         l += 1;
     }
 
+    // Return //
     while (
         k > x[j]
     ) {
         k -= 1;
         l -= 1;
 
-        c[k] = T.set;
-        c[l] = T.fre;
+        try set(c, k, T.set);
+        try set(c, l, T.fre);
     }
 
 //    out("gig", c, null);
@@ -492,7 +704,7 @@ fn rcs(
             },
 
             T.fre => {
-//                try err(":fre", v);
+//                try err("fre", v);
 
                 if (l > 0) {
                     if (l < w) return;
@@ -534,6 +746,7 @@ fn tmain(al: anytype) !void {
     puts("");
 
     const d = try ini(al, "data12-t.txt");
+//    const d = try ini(al, "data12.txt");
 
     const a = try par(al, d);
 
