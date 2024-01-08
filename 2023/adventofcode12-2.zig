@@ -60,7 +60,7 @@ fn res(d: anytype, comptime t: anytype) void {
 }
 
 // Logic
-fn ini(al: anytype, tf: anytype) ![]u8 {
+fn ini(al: anytype, tf: anytype, np: *u64) ![]u8 {
 
     var args = std.process.args();
 
@@ -75,6 +75,20 @@ fn ini(al: anytype, tf: anytype) ![]u8 {
     const d = try std.fs.cwd().readFileAlloc(al, f, std.math.maxInt(usize));
 
 //    deb("data", d, "s");
+
+    const a = args.next();
+
+    if (a) |n| {
+        const v = fmt.parseUnsigned(u64, n, 10) catch |e| {
+            err("Invalid int", n) catch {};
+
+            return e;
+        };
+
+        np.* = v;
+
+        deb("Number", v, "d");
+    }
 
     return d;
 }
@@ -209,7 +223,7 @@ fn dat(y: anytype, w: anytype, i: anytype) !D {
     return x;
 }
 
-fn run(d: anytype) !u64 {
+fn run(d: anytype, n: anytype) !u64 {
 
     var r: u64 = 0;
 
@@ -218,6 +232,12 @@ fn run(d: anytype) !u64 {
     const odbg = dbg;
 
     for (d.items, 0..) |x, i| {
+
+//        try err("n", n);
+
+        const m = 100;
+
+        if (!( i >= m*n and i < m*(n+1) )) continue;
 
         const f = x.f.items;
         const c = x.c.items;
@@ -745,8 +765,9 @@ fn rcs(
 fn tmain(al: anytype) !void {
     puts("");
 
-    const d = try ini(al, "data12-t.txt");
-//    const d = try ini(al, "data12.txt");
+    var n: u64 = 0;
+
+    const d = try ini(al, "data12-t.txt", &n);
 
     const a = try par(al, d);
 
@@ -755,7 +776,7 @@ fn tmain(al: anytype) !void {
 
     al.free(d);
 
-    const r = try run(a);
+    const r = try run(a, n);
 
     res(r, "d");
 }
