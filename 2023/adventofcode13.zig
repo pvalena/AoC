@@ -1,104 +1,44 @@
 
-// Const
-const std = @import("std");
+// Import //
+const R = @import("class.zig");
 
-const split = std.mem.split;
-const fmt = std.fmt;
-const io = std.io;
-const debug = std.debug;
-const assert = debug.assert;
+const std = R.std;
 
-const stdout = io.getStdOut().writer();
+const split = R.split;
+const fmt = R.fmt;
+const io = R.io;
+const debug = R.debug;
+const assert = R.assert;
+const stdout = R.stdout;
 
-// Types
-const Array = std.ArrayList;
+const err = R.err;
+const putd = R.putd;
+const puts = R.puts;
+const ini = R.ini;
+const res = R.res;
+//const  = R.;
+//const  = R.;
+//const  = R.;
+//const  = R.;
+//const  = R.;
 
-// Gvar
-//var bw = io.bufferedWriter(stdout);
-//const bw_stdout = bw.writer();
-//    try bw.flush(); // don't forget to flush!
+
+const Array = R.Array;
+
+
+// Globals //
 var dbg = false;
 
-// Helpers
-fn deb(comptime s: anytype, d: anytype, comptime t: anytype) void {
-    if (!dbg) return;
 
-//  for (std.meta.fields(@TypeOf(items)) |field| {
-//    const value = @field(items, field.name); 
-//
-//  }
-
-    debug.print(s ++ ": {" ++ t ++ "}\n", .{d});
-}
-
-fn puts(d: anytype) void {
-    stdout.print("{s}\n", .{d}) catch {};
-}
-
-fn putd(d: anytype) void {
-    if (dbg) debug.print("{s}\n", .{d});
-}
-
-fn err(comptime l: anytype, d: anytype) !void {
-    dbg = true;
-    putd("");
-
-    const s = "Error[" ++ l ++ "]";
-
-    deb(s, d, "any");
-
-    putd("");
-
-    return error.err;
-}
-
-fn res(d: anytype, comptime t: anytype) void {
-
-    stdout.print("\n => {" ++ t ++ "}\n\n", .{d}) catch |e| {
-        err("res", @errorName(e)) catch {};
-    };
-}
-
-// Logic
-fn ini(al: anytype, tf: anytype, np: *u64) ![]u8 {
-
-    var args = std.process.args();
-
-    _ = args.skip();
-    
-    const f = args.next() orelse tf;
-
-    if (f.len == 0) {
-        try err("Missing Arg: Filename", null);
-    }
-
-    const d = try std.fs.cwd().readFileAlloc(al, f, std.math.maxInt(usize));
-
-//    deb("data", d, "s");
-
-    const a = args.next();
-
-    if (a) |n| {
-        const v = fmt.parseUnsigned(u64, n, 10) catch |e| {
-            err("Invalid int", n) catch {};
-
-            return e;
-        };
-
-        np.* = v;
-
-        deb("Number", v, "d");
-    }
-
-    return d;
-}
-
+// Types //
 const T = enum {
     unk,
     set,
     fre,
 };
 
+
+// Data //
 const D = struct {
     f: Array(T),
     c: Array(T),
@@ -123,15 +63,8 @@ const D = struct {
     }
 };
 
-//fn D(comptime T: type) type {
-//    fn init(al: anytype, v: []u8) D {
-//        return .{
-//            .f = v,
-//            .s = Array(u64).init(al),
-//        };
-//    }
-//};
 
+// Logic //
 fn par(al: anytype, d: []u8) !Array(D) {
 
     // Return
