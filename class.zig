@@ -90,3 +90,22 @@ pub fn ini(al: anytype, tf: anytype, np: *u64) ![]u8 {
 
     return d;
 }
+
+pub fn lin(comptime l: anytype, i: anytype) void {
+
+    if (!dbg) return;
+
+    if (l.len < 3) {
+        const k = 3 - l.len;
+
+        for (0..k) |_| debug.print(" ", .{});
+    }
+
+    debug.print(l ++ ": ", .{});
+
+    for (0..i) |_| {
+        debug.print(" ", .{});
+    }
+
+    debug.print("^ {}\n", .{i});
+}
