@@ -100,7 +100,6 @@ pub fn lin(comptime l: anytype, i: anytype) void {
 
         for (0..k) |_| debug.print(" ", .{});
     }
-
     debug.print(l ++ ": ", .{});
 
     for (0..i) |_| {
@@ -108,4 +107,71 @@ pub fn lin(comptime l: anytype, i: anytype) void {
     }
 
     debug.print("^ {}\n", .{i});
+}
+
+
+pub fn eut(comptime l: anytype, f: anytype, s: ?[]i64,
+    c: anytype
+) !void {
+    dbg = true;
+
+    out(l, f, s, c);
+    try err("", null);
+}
+
+pub fn eut2(comptime l: anytype, f: anytype, s: ?[]i64,
+    c: anytype
+) !void {
+    dbg = true;
+
+    out2(l, f, s, c);
+    try err("", null);
+}
+
+pub fn out(comptime l: anytype, f: anytype, s: ?[]i64, c: anytype) void {
+    if (!dbg) return;
+
+    if (l.len < 3) {
+        const k = 3 - l.len;
+
+        for (0..k) |_| debug.print(" ", .{});
+    }
+    debug.print(l ++ ": ", .{});
+
+    for (f.items) |t| {
+
+        const v = c(t);
+
+        debug.print("{c}", .{v});
+    }
+
+    if (s) |ss| {
+        debug.print(" <- ", .{});
+
+        for (ss) |v| {
+            debug.print("{} ", .{v});
+        }
+    }
+    debug.print("\n", .{});
+}
+
+pub fn out2(comptime l: anytype, d: anytype, s: anytype, c: anytype) void {
+    if (!dbg) return;
+
+    var f: bool = true;
+
+    for (d.items()) |r| {
+
+        if (f) {
+            out(l, r, s, c);
+            f = false;
+
+        } else {
+            out("", r, null, c);
+
+        }
+
+    }
+
+    debug.print("\n", .{});
 }
