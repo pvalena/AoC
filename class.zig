@@ -8,6 +8,7 @@ pub const io = std.io;
 pub const debug = std.debug;
 pub const assert = debug.assert;
 pub const stdout = io.getStdOut().writer();
+pub const tst = std.time.timestamp;
 
 // Types
 pub const Array = std.ArrayList;
@@ -19,7 +20,7 @@ pub const Array = std.ArrayList;
 pub var dbg = false;
 
 // Helpers
-pub fn deb(comptime s: anytype, d: anytype, comptime t: anytype) void {
+pub fn deb(comptime s: anytype, d: anytype) void {
     if (!dbg) return;
 
 //  for (std.meta.fields(@TypeOf(items)) |field| {
@@ -27,35 +28,37 @@ pub fn deb(comptime s: anytype, d: anytype, comptime t: anytype) void {
 //
 //  }
 
-    debug.print(s ++ ": {" ++ t ++ "}\n", .{d});
+    debug.print(s ++ ": {any}\n", .{d});
 }
 
-//fn puts(d: anytype) void {
-pub fn puts(d: anytype) void {
-    stdout.print("{s}\n", .{d}) catch {};
+pub fn puts(comptime ll: anytype, d: anytype) void {
+    
+    const l = if (ll.len > 0) ll ++ ": " else ll;
+
+    debug.print(l ++ "{s}\n", .{d});
 }
 
-pub fn putd(d: anytype) void {
-    if (dbg) debug.print("{s}\n", .{d});
+pub fn putd(comptime ll: anytype, d: anytype) void {
+
+    const l = if (ll.len > 0) ll ++ ": " else ll;
+
+    debug.print(l ++ "{d}\n", .{d});
 }
 
 pub fn err(comptime l: anytype, d: anytype) !void {
     dbg = true;
-    putd("");
 
-    const s = "Error[" ++ l ++ "]";
+    const s = "\nError[" ++ l ++ "]";
 
-    deb(s, d, "any");
+    deb(s, d);
 
-    putd("");
+    debug.print("\n", .{});
 
     return error.err;
 }
 
-pub fn res(d: anytype, comptime t: anytype) void {
-    stdout.print("\n => {" ++ t ++ "}\n\n", .{d}) catch |e| {
-        err("res", @errorName(e)) catch {};
-    };
+pub fn res(d: anytype) void {
+    stdout.print("\n => {}\n\n", .{d}) catch {};
 }
 
 pub fn ini(al: anytype, tf: anytype, np: *u64) ![]u8 {
@@ -72,7 +75,7 @@ pub fn ini(al: anytype, tf: anytype, np: *u64) ![]u8 {
 
     const d = try std.fs.cwd().readFileAlloc(al, f, std.math.maxInt(usize));
 
-//    deb("data", d, "s");
+//    puts("data", d);
 
     const a = args.next();
 
@@ -84,8 +87,6 @@ pub fn ini(al: anytype, tf: anytype, np: *u64) ![]u8 {
         };
 
         np.* = v;
-
-        deb("Number", v, "d");
     }
 
     return d;
@@ -174,4 +175,8 @@ pub fn out2(comptime l: anytype, d: anytype, s: anytype, c: anytype) void {
     }
 
     debug.print("\n", .{});
+}
+
+pub fn pr(comptime f: anytype, s: anytype) void {
+    stdout.print(f, s) catch {};
 }
