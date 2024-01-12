@@ -429,38 +429,55 @@ fn tis(
     }
 }
 
-fn tiw(
+fn tieb(
     d: anytype,
 
 ) !void {
 
-    const w = d.w();
-//    const h = d.h();
+//    const w = d.w();
 
-    for (d.items()) |ll| {
+    const it = d.items();
+
+    for (it) |ll| {
 
         const l = ll.items;
+        const w = l.len;
 
-        otl: for (0..l.len) |i| {
+        var i: u64 = 0;
 
-            var j: u64 = i;
-
-            while (true) {
-
-                if (l[j] != T.set) continue :otl;
-
-                if (j == 0) continue :otl;
-
-                const o = j;
-                j -= 1;
-
-                if (j >= w) continue :otl;
-
-                if (l[j] != T.fre) continue :otl;
-
-                l[j] = T.set;
-                l[o] = T.fre;
+        while (i < w) {
+            if (l[i] != T.set) {
+                i += 1;
+                continue;
             }
+
+            const o = i;
+
+            i += 1;
+            var c: u64 = 1;
+
+            while (i < w and l[i] != T.roc) {
+                if (l[i] == T.set) c += 1;
+
+                i += 1;
+            }
+
+            const e = i;
+
+            while (c > 0) {
+                i -= 1;
+                c -= 1;
+
+                if (l[i] != T.set) l[i] = T.set;
+            }
+
+            while (i > o) {
+                i -= 1;
+
+                if (l[i] != T.fre) l[i] = T.fre;
+            }
+
+            i = e;
         }
     }
 }
@@ -470,37 +487,97 @@ fn tie(
 
 ) !void {
 
-    const w = d.w();
+//    const w = d.w();
 
     const it = d.items();
 
     for (it) |ll| {
 
         const l = ll.items;
+        const w = l.len;
 
-        var i: u64 = w;
+        var i: u64 = 0;
 
-        otl: while (i > 0) {
-            i -= 1;
+        while (i < w) {
+            if (l[i] != T.set) {
+                i += 1;
+                continue;
+            }
 
-            var j: u64 = i;
+            var o = i;
+
+            // here //
+
+            i += 1;
 
             while (true) {
-
-                if (l[j] != T.set) {
-                    continue :otl;
+                while (i < w and l[i] == T.set) {
+                    i += 1;
                 }
 
-                const o = j;
-                j += 1;
+                if (i >= w or l[i] != T.fre) break;
 
-                if (j >= w) continue :otl;
+                // Simply copy last to first //
 
-                if (l[j] != T.fre) continue :otl;
+                while (i < w and l[i] != T.roc) {
+                    if (l[i] == T.fre) {
+                        l[i] = T.set;
+                        l[o] = T.fre;
+                        o += 1;
+                    }
 
-                l[j] = T.set;
-                l[o] = T.fre;
+                    i += 1;
+                }
+            }
+        }
+    }
+}
 
+fn tiw(
+    d: anytype,
+
+) !void {
+
+//    const w = d.w();
+
+    const it = d.items();
+
+    for (it) |ll| {
+
+        const l = ll.items;
+        const w = l.len;
+
+        var i: u64 = w - 1;
+
+        while (i > 0) {
+            if (l[i] != T.set) {
+                i -= 1;
+                continue;
+            }
+
+            var o = i;
+
+            i -= 1;
+
+            while (true) {
+                while (i > 0 and l[i] == T.set) {
+                    i -= 1;
+                }
+
+                if (l[i] != T.fre) break;
+
+                // Simply copy last to first //
+
+                while (i >= 0 and l[i] != T.roc) {
+                    if (l[i] == T.fre) {
+                        l[i] = T.set;
+                        l[o] = T.fre;
+                        o -= 1;
+                    }
+
+                    if (i == 0) break;
+                    i -= 1;
+                }
             }
         }
     }
