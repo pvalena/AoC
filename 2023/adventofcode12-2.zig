@@ -231,11 +231,12 @@ fn run(d: anytype, n: anytype) !u64 {
     const b = 1000_000;
     const odbg = dbg;
 
+    const m = 50;
+    try stdout.print("r: {}, {}\n\n", .{m*n, m*(n+1)});
+
     for (d.items, 0..) |x, i| {
 
 //        try err("n", n);
-
-        const m = 100;
 
         if (!( i >= m*n and i < m*(n+1) )) continue;
 
