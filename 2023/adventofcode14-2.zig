@@ -305,7 +305,9 @@ fn dec(v: anytype) !T {
 }
 
 // Logic //
-fn run(d: anytype, b: anytype) !u64 {
+fn run(d: anytype, b: anytype, qq: anytype) !u64 {
+
+    var q = qq;
 
 //    _ = b;
 
@@ -331,6 +333,25 @@ fn run(d: anytype, b: anytype) !u64 {
         try tis(d);
 
         try tie(d);
+
+        // dup an object?? //
+        const c = try cop(d);
+
+        var f = false;
+
+        for (q.items) |v| {
+
+            if (v == c) {
+                pr("same: {}, {}\n", .{i, c});
+                f = true;
+                break;
+            }
+            
+        }
+
+        if (!f) {
+            try q.append(c);
+        }
 
         if (i % n == 0) {
 //            const o = dbg.*;
@@ -633,7 +654,10 @@ fn tmain(al: anytype, nn: anytype) !void {
     const a = try par(al, d);
     defer a.deinit();
 
-    const r = try run(a, n);
+    var q = Array(u64).init(al);
+    defer q.deinit();
+
+    const r = try run(a, n, q);
 
     res(r);
 }
