@@ -231,7 +231,7 @@ fn run(d: anytype, n: anytype) !u64 {
     const b = 1000_000;
     const odbg = dbg;
 
-    const m = 50;
+    const m = 10;
     try stdout.print("r: {}, {}\n\n", .{m*n, m*(n+1)});
 
     for (d.items, 0..) |x, i| {
