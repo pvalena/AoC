@@ -429,7 +429,8 @@ fn cal(
 
 // Main //
 fn tmain(al: anytype) !void {
-    puts("");
+
+    puts("", "");
 
     var n: u64 = 0;
 
@@ -443,7 +444,7 @@ fn tmain(al: anytype) !void {
 
     const r = try run(a, n);
 
-    res(r, "d");
+    res(r);
 }
 
 
@@ -465,7 +466,7 @@ pub fn main() !void {
 test "main" {
     dbg.* = true;
 
-    putd("");
+    puts("", "");
 
     const al = std.testing.allocator;
 
