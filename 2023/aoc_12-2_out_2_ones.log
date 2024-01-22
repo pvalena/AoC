@@ -7299,3 +7299,150 @@ v: 863, 26244
 
  => 26244
 
+time timeout 1h zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 351
+time timeout 1h zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 406
+time timeout 1h zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 354
+time timeout 1h zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 96
+time timeout 1h zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 148
+time timeout 1h zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 108
+time timeout 1h zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 665
+time timeout 1h zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 912
+time timeout 1h zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 959
+time timeout 1h zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 86
+time timeout 1h zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 961
+time timeout 1h zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 907
+time timeout 1h zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 403
+time timeout 1h zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 437
+time timeout 1h zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 202
+time timeout 1h zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 186
+time timeout 1h zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 998
+time timeout 1h zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 614
+time timeout 1h zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 182
+time timeout 1h zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 414
+time timeout 1h zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 532
+time timeout 1h zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 725
+time timeout 1h zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 818
+time timeout 1h zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 570
+time timeout 1h zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 747
+time timeout 1h zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 105
+time timeout 1h zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 889
+time timeout 1h zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 120
+time timeout 1h zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 108
+time timeout 1h zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 566
+time timeout 1h zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 344
+time timeout 1h zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 526
+time timeout 1h zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 918
+time timeout 1h zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 106
+time timeout 1h zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 878
+time timeout 1h zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 550
+time timeout 1h zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 116
+time timeout 1h zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 887
+time timeout 1h zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 916
+time timeout 1h zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 534
+
+r: 889, 890
+
+v: 889, 1875
+
+
+ => 1875
+
+
+r: 344, 345
+
+
+r: 106, 107
+
+v: 106, 1
+
+
+ => 1
+
+
+r: 550, 551
+
+
+r: 878, 879
+
+
+r: 120, 121
+
+v: 120, 629182
+
+
+ => 629182
+
+
+r: 566, 567
+
+v: 566, 1
+
+
+ => 1
+
+
+r: 105, 106
+
+
+r: 116, 117
+
+v: 116, 243
+
+
+ => 243
+
+
+r: 526, 527
+
+
+r: 887, 888
+
+v: 887, 2035824375
+
+
+ => 2035824375
+
+
+r: 747, 748
+
+
+r: 918, 919
+
+v: 918, 46429
+
+
+ => 46429
+
+
+r: 570, 571
+
+
+r: 108, 109
+
+v: 108, 10911
+
+
+ => 10911
+
+
+r: 916, 917
+
+
+r: 534, 535
+
+v: 534, 768
+
+
+ => 768
+
+time zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 344
+time zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 747
+time zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 550
+time zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 916
+time zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 878
+time zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 105
+time zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 570
+time zig run -OReleaseFast adventofcode12-2.zig -- data12.txt 526
+
+r: 878, 879
+
