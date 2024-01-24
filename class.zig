@@ -12,6 +12,8 @@ pub const tst = std.time.timestamp;
 
 // Types
 pub const Array = std.ArrayList;
+pub const HashMap = std.AutoHashMap;
+
 
 // Gvar
 //pub var bw = io.bufferedWriter(stdout);
@@ -181,6 +183,12 @@ pub fn pr(comptime f: anytype, s: anytype) void {
     stdout.print(f, s) catch {};
 }
 
+pub fn dpr(comptime f: anytype, s: anytype) void {
+    if (!dbg) return;
+
+    debug.print(f, s);
+}
+
 pub fn gen(comptime T: anytype) type {
     const N = Array(T);
 
@@ -291,10 +299,59 @@ pub fn num(v: anytype) !u64 {
     return n;
 }
 
-pub fn split(d: anytype, s: anytype) mem.SplitIterator(u8,.sequence) {
-    return std.mem.split(u8, d, s);
+pub fn spl(d: anytype, s: anytype) mem.SplitIterator(u8,.sequence) {
+    return mem.split(u8, d, s);
 }
 
 pub fn eql(d: anytype, s: anytype) bool {
-    return std.mem.eql(u8, d, s);
+    return mem.eql(u8, d, s);
 }
+
+pub fn rep(aa: anytype, l: anytype) !Array(@TypeOf(l)) {
+
+    var a = aa;
+
+    const e = a.items.len;
+
+    try a.append(l);
+
+    if (fin(a, l.l)) |i| {
+        if (i != e) _ = a.swapRemove(i);
+    }
+
+    return a;
+}
+
+pub fn fin(a: anytype, l: anytype) ?usize {
+    var z: ?usize = null;
+
+    for (a.items, 0..) |v, i| {
+
+        if (eql(v.l, l)) {
+            z = i;
+            break;
+        }
+    }
+
+    return z;
+}
+
+pub fn rem(aa: anytype, l: anytype) !Array(@TypeOf(l)) {
+
+    var a = aa;
+
+    const z = fin(a, l);
+
+    if (z) |i| {
+        _ = a.orderedRemove(i);       
+    }
+
+    return a;
+}
+
+pub fn swp(n: anytype, l: anytype) void {
+    const t = l.*;
+          l.* = n.*;
+          n.* = t;
+}
+
