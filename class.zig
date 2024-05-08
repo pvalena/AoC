@@ -13,7 +13,7 @@ pub const tst = std.time.timestamp;
 // Types
 pub const Array = std.ArrayList;
 pub const HashMap = std.AutoHashMap;
-
+pub const HashArray = std.AutoArrayHashMap;
 
 // Gvar
 //pub var bw = io.bufferedWriter(stdout);
@@ -57,6 +57,10 @@ pub fn err(comptime l: anytype, d: anytype) !void {
     debug.print("\n", .{});
 
     return error.err;
+}
+
+pub fn wip() !void {
+    try err("", 0);
 }
 
 pub fn res(d: anytype) void {
@@ -242,6 +246,11 @@ pub fn gen(comptime T: anytype) type {
             return sl.d.items[i].items[c];
         }
 
+        pub fn get2(sl: anytype, p: anytype) T {
+
+            return sl.get(p[0], p[1]);
+        }
+
         pub fn set(
             sl: anytype, ii: anytype, jj: anytype,
             t: anytype
@@ -256,6 +265,8 @@ pub fn gen(comptime T: anytype) type {
 
             const r = c[i].items;
 
+            deb("r2", r.len);
+
             assert(j < r.len);
 
             const x = r[j];
@@ -263,13 +274,30 @@ pub fn gen(comptime T: anytype) type {
             _ = switch(t) {
                 T.set => assert(x == T.fre),
                 T.fre => assert(x == T.set),
-
-                else => {
-                    try err("set", t);
-                }
             };
 
             r[j] = t;
+        }
+
+        pub fn set2(sl: anytype, p: anytype, t: anytype) !void {
+
+            const i = p[0];
+            const j = p[1];
+
+            while (i >= sl.d.items.len) {
+                try sl.new();
+            }            
+
+            const c = sl.d;        
+
+            var r = c.items[i];
+
+            while (j >= r.items.len) {
+                try r.append(T.fre);
+            }
+
+            r.items[j] = t;
+            c.items[i] = r;
         }
 
         pub fn deinit(sl: anytype) void {
@@ -282,18 +310,17 @@ pub fn gen(comptime T: anytype) type {
     };
 }
 
-pub fn num(v: anytype) !u64 {
-    var n: u64 = undefined;
+pub fn num(v: anytype, t: anytype) !t {
+    var n: t = undefined;
 
     if (v[0] >= '0' and v[0] <= '9') {
-        n = fmt.parseUnsigned(u64, v, 10) catch |e| {
+        n = fmt.parseUnsigned(t, v, 10) catch |e| {
             err("Invalid int", v) catch {};
 
             return e;
         };
     } else {
         try err("Invalid number", v);
-
     }
 
     return n;
