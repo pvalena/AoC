@@ -10,10 +10,12 @@ pub const assert = debug.assert;
 pub const stdout = io.getStdOut().writer();
 pub const tst = std.time.timestamp;
 
+
 // Types
 pub const Array = std.ArrayList;
 pub const HashMap = std.AutoHashMap;
 pub const HashArray = std.AutoArrayHashMap;
+
 
 // Gvar
 //pub var bw = io.bufferedWriter(stdout);
@@ -21,7 +23,8 @@ pub const HashArray = std.AutoArrayHashMap;
 //    try bw.flush(); // don't forget to flush!
 pub var dbg = false;
 
-// Helpers
+
+// Helper methods
 pub fn deb(comptime s: anytype, d: anytype) void {
     if (!dbg) return;
 
@@ -60,13 +63,15 @@ pub fn err(comptime l: anytype, d: anytype) !void {
 }
 
 pub fn wip() !void {
-    try err("", 0);
+    try err("wip", .{});
 }
 
 pub fn res(d: anytype) void {
     stdout.print("\n => {}\n\n", .{d}) catch {};
 }
 
+
+// Args //
 pub fn ini(al: anytype, tf: anytype, np: *u64) ![]u8 {
 
     var args = std.process.args();
@@ -310,6 +315,133 @@ pub fn gen(comptime T: anytype) type {
     };
 }
 
+pub fn genH(comptime T: anytype) type {
+    const N = HashArray(T, void);
+
+    return struct {
+//        var al: G.allocator();
+
+        al: mem.Allocator,
+        d: Array(N),
+        l: *N,
+
+        pub fn init(al: anytype) @This() {
+            var s: @This() = undefined;
+
+            s.al = al;
+            s.d = Array(N).init(al);
+          
+            return s;
+        }
+
+        pub fn items(sl: anytype) []N {
+            return sl.d.items;
+        }
+
+        pub fn h(sl: anytype) usize {
+            return sl.d.items.len;
+        }
+
+        pub fn w(sl: anytype) usize {
+            return sl.l.items.len;
+        }
+
+        pub fn new(sl: anytype) !void {
+            const l = N.init(sl.al);
+
+            try sl.d.append(l);
+
+            const i = sl.d.items;
+
+            sl.l = &i[i.len-1];
+        }
+
+        pub fn add(sl: anytype, v: anytype) !void {
+            try sl.l.put(v, {});
+        }
+
+        pub fn chc(sl: anytype, ii: anytype, cc: anytype) bool {
+
+//            const i: usize = @intCast(ii);
+//            const c: usize = @intCast(cc);
+
+            assert(ii >= 0);
+
+            if (ii >= sl.d.items.len) return false;
+
+            const t = sl.d.items[ii];
+
+            const v = t.get(cc);
+
+            if (v) |_| {
+                return true;
+            }
+
+            return false;
+        }
+
+        pub fn get2(sl: anytype, p: anytype) T {
+
+            return sl.get(p[0], p[1]);
+        }
+
+        pub fn set(
+            sl: anytype, ii: anytype, jj: anytype,
+            t: anytype
+        ) !void {
+
+            const i: usize = @intCast(ii);
+            const j: usize = @intCast(jj);
+
+            const c = sl.d.items;
+        
+            assert(i < c.len);
+
+            const r = c[i].items;
+
+            deb("r2", r.len);
+
+            assert(j < r.len);
+
+            const x = r[j];
+
+            _ = switch(t) {
+                T.set => assert(x == T.fre),
+                T.fre => assert(x == T.set),
+            };
+
+            r[j] = t;
+        }
+
+        pub fn set2(sl: anytype, p: anytype) !void {
+
+            const i = p[0];
+            const j = p[1];
+
+            while (i >= sl.d.items.len) {
+                try sl.new();
+            }
+            
+            try sl.put(i, j);            
+        }
+
+        pub fn put(sl: anytype, i: anytype, j: anytype) !void {
+
+            try sl.d.items[i].put(j, {});
+        }
+
+        pub fn deinit(sl: anytype) void {
+            for (sl.d.items) |ii| {
+
+                var i = ii;
+                i.deinit();
+
+            }
+            sl.d.deinit();
+        }
+    };
+}
+
 pub fn num(v: anytype, t: anytype) !t {
     var n: t = undefined;
 
@@ -381,4 +513,36 @@ pub fn swp(n: anytype, l: anytype) void {
           l.* = n.*;
           n.* = t;
 }
+
+pub fn chc(b: anytype, k: anytype) bool {
+    const w = b.get(k);
+
+    if (w) |_| {
+        return true;        
+    }
+
+    return false;
+}
+
+pub fn sort(d: anytype) void {
+
+    mem.sort(u64, d.*, {}, comptime std.sort.asc(u64));
+}
+
+pub fn sort2(d: anytype) void {
+
+    mem.sort([2]u64, d.*, {}, comptime cmp0([2]u64));
+}
+
+
+// Copied & modified
+// std/sort.zig
+pub fn cmp0(comptime T: type) fn (void, T, T) bool {
+    return struct {
+        pub fn inner(_: void, a: T, b: T) bool {
+            return a[0] < b[0];
+        }
+    }.inner;
+}
+
 
