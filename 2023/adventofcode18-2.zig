@@ -350,7 +350,7 @@ fn fil(
         }
     }
 
-    deb("c", c.items().len);
+    deb("fin", tst() - t);
 }
 
 fn chcL(l: anytype, x: anytype, c: anytype) !void {
@@ -424,7 +424,7 @@ fn filR(al: anytype, b: anytype, c: anytype, x: anytype, g: anytype) !void {
                     if (y) {
                         const r = .{i, j};
                     
-                        deb("filR", .{x, r});
+//                        deb("filR", .{x, r});
 
                         // rec //
                         if (x > 0) try filR(al, b, c, x-1, r);
