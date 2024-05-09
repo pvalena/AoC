@@ -1,6 +1,7 @@
 #!/usr/bin/env zsh
 
 set -xe
+set -o pipefail
 
 n="$1"
 shift ||:
@@ -23,6 +24,8 @@ shift ||:
   :
 } || V=
 
+[[ -n "$1" ]] && exit 2
+
 ###
 
 a='-freference-trace'
@@ -33,7 +36,7 @@ s="${n}${p:+-$p}"
 f="adventofcode${s}.zig"
 l="out${s}.log"
 
-t=30
+t=60
 
 ###
 
@@ -60,7 +63,7 @@ while :; do
   echo
   set -x
 
-  time zig run $aa $f -- "data${n}.txt" $X || echo FAIL
+  time zig run $aa $f -- "data${n}.txt" $X | tee "$l" || echo FAIL
 
   { set +x ; } &>/dev/null
   con
