@@ -15,6 +15,7 @@ pub const tst = std.time.timestamp;
 pub const Array = std.ArrayList;
 pub const HashMap = std.AutoHashMap;
 pub const HashArray = std.AutoArrayHashMap;
+pub const StringMap = std.StringHashMap;
 
 
 // Gvar
@@ -41,6 +42,13 @@ pub fn puts(comptime ll: anytype, d: anytype) void {
     const l = if (ll.len > 0) ll ++ ": " else ll;
 
     debug.print(l ++ "{s}\n", .{d});
+}
+
+pub fn putc(comptime ll: anytype, d: anytype) void {
+    
+    const l = if (ll.len > 0) ll ++ ": " else ll;
+
+    debug.print(l ++ "{c}\n", .{d});
 }
 
 pub fn putd(comptime ll: anytype, d: anytype) void {
@@ -315,6 +323,153 @@ pub fn gen(comptime T: anytype) type {
     };
 }
 
+pub fn genS(comptime T: anytype) type {
+    const N = Array(T);
+    const S = Array(u8);
+
+    return struct {
+//        var al: G.allocator();
+
+        al: mem.Allocator,
+        d: StringMap(N),
+        s: Array(S),
+        l: []const u8,
+
+        pub fn init(al: anytype) !@This() {
+            var sl: @This() = undefined;
+
+            sl.al = al;
+            sl.d = StringMap(N).init(al);
+
+            sl.s = Array(S).init(al);
+
+            return sl;
+        }
+
+        pub fn items(sl: anytype) []N {
+            return sl.d.items;
+        }
+
+        pub fn h(sl: anytype) usize {
+            return sl.d.items.len;
+        }
+
+        pub fn new(sl: anytype, x: anytype) !void {
+
+            const al = sl.al;
+
+//            var t = S.init(al);
+//            try sl.s.append(t);
+
+            // TODO: Copy string //
+
+//            try t.append(x[0]);
+
+            // ### //
+        
+            const l = N.init(al);
+            try sl.d.put(x, l);
+
+            sl.l = x;
+        }
+
+        pub fn add(sl: anytype, v: anytype) !void {
+
+            var l = sl.d.get(sl.l) orelse return error.missing;
+
+            try l.append(v);
+
+            try sl.d.put(sl.l, l);
+        }
+
+        pub fn get(sl: anytype, x: anytype) !T {
+
+            const v = sl.d.get(x) orelse return error.missing;
+
+            try err("v", v);
+
+            return error.idk;
+        }
+
+        pub fn get2(sl: anytype, p: anytype) T {
+
+            return sl.get(p[0], p[1]);
+        }
+
+        pub fn set(
+            sl: anytype, ii: anytype, jj: anytype,
+            t: anytype
+        ) !void {
+
+            const i: usize = @intCast(ii);
+            const j: usize = @intCast(jj);
+
+            const c = sl.d.items;
+        
+            assert(i < c.len);
+
+            const r = c[i].items;
+
+            deb("r2", r.len);
+
+            assert(j < r.len);
+
+            const x = r[j];
+
+            _ = switch(t) {
+                T.set => assert(x == T.fre),
+                T.fre => assert(x == T.set),
+            };
+
+            r[j] = t;
+        }
+
+        pub fn set2(sl: anytype, p: anytype, t: anytype) !void {
+
+            const i = p[0];
+            const j = p[1];
+
+            while (i >= sl.d.items.len) {
+                try sl.new();
+            }            
+
+            const c = sl.d;        
+
+            var r = c.items[i];
+
+            while (j >= r.items.len) {
+                try r.append(T.fre);
+            }
+
+            r.items[j] = t;
+            c.items[i] = r;
+        }
+
+        pub fn deinit(sl: anytype) void {
+
+            var j = sl.d.valueIterator();
+            while (j.next()) |v| {
+                v.deinit();
+            }
+            var d = sl.d;
+            d.deinit();
+
+            // ArrayHashMap
+//            for (sl.d.items) |i| {
+//                i.deinit();
+//
+//            }
+//            sl.d.deinit();
+
+            for (sl.s.items) |i| {
+                i.deinit();
+
+            }
+            sl.s.deinit();
+        }
+    };
+}
+
 pub fn genH(comptime T: anytype) type {
     const N = HashArray(T, void);
 
@@ -371,13 +526,7 @@ pub fn genH(comptime T: anytype) type {
 
             const t = sl.d.items[ii];
 
-            const v = t.get(cc);
-
-            if (v) |_| {
-                return true;
-            }
-
-            return false;
+            return t.contains(cc);
         }
 
         pub fn get2(sl: anytype, p: anytype) T {
@@ -452,14 +601,18 @@ pub fn num(v: anytype, t: anytype) !t {
             return e;
         };
     } else {
-        try err("Invalid number", v);
+//        puts("num", v);
+//        try err("num", v);
+
+        return error.num;
     }
 
     return n;
 }
 
-pub fn spl(d: anytype, s: anytype) mem.SplitIterator(u8,.sequence) {
-    return mem.split(u8, d, s);
+pub fn spl(d: anytype, s: anytype) mem.SplitIterator(u8, .any) {
+    return mem.splitAny(u8, d, s);
+//    return mem.split(u8, d, s);
 }
 
 pub fn eql(d: anytype, s: anytype) bool {
@@ -515,13 +668,7 @@ pub fn swp(n: anytype, l: anytype) void {
 }
 
 pub fn chc(b: anytype, k: anytype) bool {
-    const w = b.get(k);
-
-    if (w) |_| {
-        return true;        
-    }
-
-    return false;
+    return b.contains(k);
 }
 
 pub fn sort(d: anytype) void {
@@ -532,6 +679,35 @@ pub fn sort(d: anytype) void {
 pub fn sort2(d: anytype) void {
 
     mem.sort([2]u64, d.*, {}, comptime cmp0([2]u64));
+}
+
+pub fn setx(c: anytype, x: anytype, i: anytype, j: anytype) !bool {
+
+    assert(i < j);
+
+    const r = .{i, j};
+
+    if (!c.chc(x, r)) {
+        try c.set2(.{x, r});
+
+        return true;
+    }
+
+    return false;
+}
+
+fn wal(l: anytype, z: anytype) !bool {
+
+    for (l) |k| {
+        const i = k[0];
+        const j = k[1];
+
+        if (i <= z and z <= j) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 
