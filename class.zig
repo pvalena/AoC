@@ -13,7 +13,7 @@ pub const tst = std.time.timestamp;
 
 // Types
 pub const Array = std.ArrayList;
-pub const HashMap = std.AutoHashMap;
+pub const Hash = std.AutoHashMap;
 pub const HashArray = std.AutoArrayHashMap;
 pub const StringMap = std.StringHashMap;
 
@@ -432,7 +432,7 @@ pub fn genS(comptime T: anytype) type {
             var d = sl.d;
             d.deinit();
 
-            // ArrayHashMap
+            // ArrayHash
 //            for (sl.d.items) |i| {
 //                i.deinit();
 //
