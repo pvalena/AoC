@@ -325,14 +325,12 @@ pub fn gen(comptime T: anytype) type {
 
 pub fn genS(comptime T: anytype) type {
     const N = Array(T);
-    const S = Array(u8);
 
     return struct {
 //        var al: G.allocator();
 
         al: mem.Allocator,
         d: StringMap(N),
-        s: Array(S),
         l: []const u8,
 
         pub fn init(al: anytype) !@This() {
@@ -340,8 +338,6 @@ pub fn genS(comptime T: anytype) type {
 
             sl.al = al;
             sl.d = StringMap(N).init(al);
-
-            sl.s = Array(S).init(al);
 
             return sl;
         }
@@ -358,15 +354,6 @@ pub fn genS(comptime T: anytype) type {
 
             const al = sl.al;
 
-//            var t = S.init(al);
-//            try sl.s.append(t);
-
-            // TODO: Copy string //
-
-//            try t.append(x[0]);
-
-            // ### //
-        
             const l = N.init(al);
             try sl.d.put(x, l);
 
@@ -382,18 +369,9 @@ pub fn genS(comptime T: anytype) type {
             try sl.d.put(sl.l, l);
         }
 
-        pub fn get(sl: anytype, x: anytype) !T {
+        pub fn get(sl: anytype, x: anytype) !N {
 
-            const v = sl.d.get(x) orelse return error.missing;
-
-            try err("v", v);
-
-            return error.idk;
-        }
-
-        pub fn get2(sl: anytype, p: anytype) T {
-
-            return sl.get(p[0], p[1]);
+            return sl.d.get(x) orelse return error.missing;
         }
 
         pub fn set(
@@ -461,11 +439,6 @@ pub fn genS(comptime T: anytype) type {
 //            }
 //            sl.d.deinit();
 
-            for (sl.s.items) |i| {
-                i.deinit();
-
-            }
-            sl.s.deinit();
         }
     };
 }
@@ -667,10 +640,6 @@ pub fn swp(n: anytype, l: anytype) void {
           n.* = t;
 }
 
-pub fn chc(b: anytype, k: anytype) bool {
-    return b.contains(k);
-}
-
 pub fn sort(d: anytype) void {
 
     mem.sort(u64, d.*, {}, comptime std.sort.asc(u64));
@@ -696,7 +665,7 @@ pub fn setx(c: anytype, x: anytype, i: anytype, j: anytype) !bool {
     return false;
 }
 
-fn wal(l: anytype, z: anytype) !bool {
+pub fn wal(l: anytype, z: anytype) !bool {
 
     for (l) |k| {
         const i = k[0];
@@ -710,6 +679,17 @@ fn wal(l: anytype, z: anytype) !bool {
     return false;
 }
 
+pub fn sum(l: anytype) u64 {
+
+    var r: u64 = 0;
+
+    for (l) |v| {
+        r += v;
+    }
+
+    return r;
+}
+
 
 // Copied & modified
 // std/sort.zig
@@ -720,5 +700,3 @@ pub fn cmp0(comptime T: type) fn (void, T, T) bool {
         }
     }.inner;
 }
-
-

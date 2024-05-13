@@ -79,19 +79,16 @@ l="out${s}.log"
 set +x
 
 while :; do
-  echo
-  echo
-  clear
-
   [[ -n "$S" ]] || {
-    cst -c "$f" " \
-        set -o pipefail; set -x ; \
+    cst "$f" " \
+        set -o pipefail; echo; echo; clear; set -x ; \
         timeout ${t} time zig test $a $f 2>&1 $H \
+          && exit
       " \
         | tee "$l"
 
     [[ -n "$V" ]] && {
-      grep -E "^\s*=> ${V}$" "$l" || {
+      grep -qE "^\s*=> ${V}$" "$l" || {
         con
         continue
       }
