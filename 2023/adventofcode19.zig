@@ -1,9 +1,7 @@
-
 // Import //
 const R = @import("class.zig");
 
 const std = R.std;
-
 const fmt = R.fmt;
 const io = R.io;
 const mem = R.mem;
@@ -11,12 +9,6 @@ const debug = R.debug;
 const assert = R.assert;
 const stdout = R.stdout;
 const tst = R.tst;
-
-const spl = R.spl;
-const eql = R.eql;
-const swp = R.swp;
-const sort = R.sort;
-const sort2 = R.sort2;
 
 const ini = R.ini;
 const res = R.res;
@@ -43,8 +35,14 @@ const HashArray = R.HashArray;
 const gen = R.gen;
 const genH = R.genH;
 const genS = R.genS;
+
+const spl = R.spl;
+const eql = R.eql;
+const swp = R.swp;
+const sort = R.sort;
+const sort2 = R.sort2;
 const num = R.num;
-const chc = R.chc;
+const sum = R.sum;
 
 
 // Globals //
@@ -244,9 +242,6 @@ fn dat0(l: anytype, j: anytype, a: anytype) !void {
             }
         }
 
-    } else {
-        u.r = l;
-
     }
 
     if (i == 2) {
@@ -256,6 +251,7 @@ fn dat0(l: anytype, j: anytype, a: anytype) !void {
     } else {
         if (i > 2) try err("dat0; i", i);
 
+        u.r = l;
         u.o = T.R;
     }
 
@@ -302,11 +298,12 @@ fn run(al: anytype, d: anytype, z: anytype) !u64 {
     // Timestamp //
 //    const t = tst();
 
-//    // Result //
-//    var b = B.init(al);
-//    try b.new();
-//    defer b.deinit();
-//
+    // Result //
+    var r: u64 = 0;
+//    var r = Array().init(al);
+//    try r.new();
+//    defer r.deinit();
+
 //    var h = HashMap(u64, void).init(al);
 //    defer h.deinit();
 //
@@ -323,40 +320,60 @@ fn run(al: anytype, d: anytype, z: anytype) !u64 {
     const b = d.b.items;
 
     for (b) |l| {
-        try pla(&l, &a, "in");
+        puts("","");
+        deb("run", l);
+
+        try pla(&l, &a, "in", &r);
     }
 
     // Evaluate //
 //    return fin(&b, &c);
-    return 0;
+    return r;
 }
 
 fn pla(
     l: anytype,
     a: anytype,
     y: anytype,
+    r: anytype
 ) !void {
 
-    const x = a.get(y);
-   
-    deb("pla", .{l.*, y.*, x});
+    puts("pla", y);
 
-//    if (x.len == 0) {
-//        switch (x[0]) {
-//            'A' => try err("pla; A", x),
-//            'R' => try err("pla; R", x),
-//            else =>
-//                try err("pla; swi", x)
-//        }
-//    }
-//
-//    if (x.o == T.R) {
-//
-//        try err("last", l.r);
-//
-//    }
+    if (y.len == 1) {
+        switch (y[0]) {
+            'A' => {
+                r.* += sum(l);
+                return;
+            },
+            'R' => return,
+            else => {}
+        }
+    }
 
-    try wip();
+    const u = try a.get(y);
+
+    assert(u.items.len > 0);
+
+    for (u.items) |x| {
+
+//        deb("x", x);
+
+        if (x.o == T.R) return try pla(l, a, x.r, r);
+
+        const v = l[x.c];
+
+        const s = switch (x.o) {
+            T.L => v < x.n,
+            T.M => v > x.n,
+            else =>
+                return try err("pla; swi2", x)
+        };
+
+        if (s) return try pla(l, a, x.r, r);
+    }
+
+    unreachable;
 }
 
 fn fin(b: anytype, c: anytype) !u64 {
