@@ -29,22 +29,16 @@ shift ||:
 ###
 
 [[ "$1" == '-d' ]] && {
-  X="$2"
+  D="$2"
   shift 2 ||:
   :
-} || X=
+} || D=
 
 [[ "$1" == '-h' ]] && {
   H="$1"
   shift ||:
   :
 } || H=
-
-[[ "$1" == '-s' ]] && {
-  S="$1"
-  shift ||:
-  :
-} || S=
 
 [[ "$1" == '-v' ]] && {
   V="$2"
@@ -58,6 +52,12 @@ shift ||:
   shift ||:
   :
 }
+
+[[ "$1" == '-x' ]] && {
+  X="$1"
+  shift ||:
+  :
+} || X=
 
 [[ -n "$1" ]] && exit 2
 
@@ -76,10 +76,12 @@ l="out${s}.log"
 
 ###
 
+echo; echo
+clear
 set +x
 
 while :; do
-  [[ -n "$S" ]] || {
+  [[ -n "$X" ]] || {
     cst "$f" " \
         set -o pipefail; echo; echo; clear; set -x ; \
         timeout ${t} time zig test $a $f 2>&1 $H \
@@ -98,7 +100,7 @@ while :; do
   echo
   set -x
 
-  ${tme} -l zig run $aa $f -- "data${n}.txt" $X | tee "$l" || echo "FAIL: $?"
+  ${tme} -l zig run $aa $f -- "data${n}.txt" $D | tee "$l" || echo "FAIL: $?"
 
   { set +x ; } &>/dev/null
   con
