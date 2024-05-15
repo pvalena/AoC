@@ -15,7 +15,7 @@ pub const tst = std.time.timestamp;
 pub const Array = std.ArrayList;
 pub const Hash = std.AutoHashMap;
 pub const HashArray = std.AutoArrayHashMap;
-pub const StringMap = std.StringHashMap;
+pub const StringHash = std.StringHashMap;
 
 
 // Gvar
@@ -330,14 +330,14 @@ pub fn genS(comptime T: anytype) type {
 //        var al: G.allocator();
 
         al: mem.Allocator,
-        d: StringMap(N),
+        d: StringHash(N),
         l: []const u8,
 
         pub fn init(al: anytype) !@This() {
             var sl: @This() = undefined;
 
             sl.al = al;
-            sl.d = StringMap(N).init(al);
+            sl.d = StringHash(N).init(al);
 
             return sl;
         }
@@ -355,8 +355,12 @@ pub fn genS(comptime T: anytype) type {
             const al = sl.al;
 
             const l = N.init(al);
-            try sl.d.put(x, l);
 
+            var d = sl.d;
+
+            try d.put(x, l);
+
+            sl.d = d;
             sl.l = x;
         }
 
@@ -369,58 +373,111 @@ pub fn genS(comptime T: anytype) type {
             try sl.d.put(sl.l, l);
         }
 
+        pub fn put(sl: anytype, x: anytype, v: anytype) !void {
+
+            var l = sl.d.get(x) orelse return error.missing;
+
+            try l.append(v);
+
+            try sl.d.put(x, l);
+        }
+
         pub fn get(sl: anytype, x: anytype) !N {
 
             return sl.d.get(x) orelse return error.missing;
         }
 
-        pub fn set(
-            sl: anytype, ii: anytype, jj: anytype,
-            t: anytype
-        ) !void {
+        pub fn deinit(sl: anytype) void {
 
-            const i: usize = @intCast(ii);
-            const j: usize = @intCast(jj);
+            var j = sl.d.valueIterator();
+            while (j.next()) |v| {
+                v.deinit();
+            }
+            var d = sl.d;
+            d.deinit();
 
-            const c = sl.d.items;
-        
-            assert(i < c.len);
+            // ArrayHash
+//            for (sl.d.items) |i| {
+//                i.deinit();
+//
+//            }
+//            sl.d.deinit();
 
-            const r = c[i].items;
+        }
+    };
+}
 
-            deb("r2", r.len);
+pub fn gen2S(comptime T: anytype) type {
+    const N = StringHash(T);
 
-            assert(j < r.len);
+    return struct {
+        al: mem.Allocator,
+        d: StringHash(N),
+        l: []const u8,
 
-            const x = r[j];
+        pub fn init(al: anytype) !@This() {
+            var sl: @This() = undefined;
 
-            _ = switch(t) {
-                T.set => assert(x == T.fre),
-                T.fre => assert(x == T.set),
-            };
+            sl.al = al;
+            sl.d = StringHash(N).init(al);
 
-            r[j] = t;
+            return sl;
         }
 
-        pub fn set2(sl: anytype, p: anytype, t: anytype) !void {
+        pub fn new(sl: anytype, x: anytype) !N {
 
-            const i = p[0];
-            const j = p[1];
+            const al = sl.al;
 
-            while (i >= sl.d.items.len) {
-                try sl.new();
-            }            
+            const l = N.init(al);
 
-            const c = sl.d;        
+            var d = sl.d;
 
-            var r = c.items[i];
+            try d.put(x, l);
 
-            while (j >= r.items.len) {
-                try r.append(T.fre);
-            }
+            sl.d = d;
+            sl.l = x;
 
-            r.items[j] = t;
-            c.items[i] = r;
+            return l;
+        }
+
+        pub fn add(sl: anytype, v: anytype) !void {
+
+            var l = sl.d.get(sl.l) orelse return error.missing;
+
+            try l.append(v);
+
+            try sl.d.put(sl.l, l);
+        }
+
+        pub fn put(sl: anytype, x: anytype, y: anytype, v: anytype) !void {
+
+            const d = sl.d;
+
+            var l = switch(d.contains(x)) {
+                true =>
+                    d.get(x) orelse return error.missing,
+
+                false =>
+                    try sl.new(x),
+            };
+
+            try l.put(y, v);
+
+            try sl.d.put(x, l);
+        }
+
+        pub fn get(sl: anytype, x: anytype) !N {
+
+            return sl.d.get(x) orelse return error.missing;
+        }
+
+        pub fn get2(sl: anytype, x: anytype, y: anytype) !N {
+
+            try wip();
+
+            _ = y;
+
+            return sl.d.get(x) orelse return error.missing;
         }
 
         pub fn deinit(sl: anytype) void {
@@ -688,6 +745,51 @@ pub fn sum(l: anytype) u64 {
     }
 
     return r;
+}
+
+pub fn phk(comptime l: anytype, a: anytype) void {
+
+    if (!dbg.*) return;
+
+    dpr("\n" ++ l ++ "[k]: ", .{});
+
+    var k = a.keyIterator();
+
+    while (k.next()) |v| {
+        dpr("[{}, {}] ", .{v[0], v[1]});
+    }
+
+    dpr("\n", .{});
+}
+
+pub fn pra(a: anytype) void {
+
+    if (!dbg.*) return;
+
+    pr("\n", .{});
+
+    for (a.items(), 0..) |rr, i| {
+
+        _ = i;
+
+        const r = rr.items;
+    
+        if (r.len <= 0) continue;
+    
+        pr("   ", .{});
+
+        for (r, 0..) |l, j| {
+
+            _ = j;
+
+            pr("{any}", l);
+//            pr("{c}", .{dis(l)});
+        }
+
+        pr("\n", .{});
+    }
+
+    pr("\n", .{});
 }
 
 
