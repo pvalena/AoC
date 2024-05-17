@@ -127,7 +127,6 @@ const C = struct {
         try sl.a.put(n, v);
     }
 
-    
     fn add(sl: anytype, x: anytype, t: anytype) !void {
 
         if (sl.a.contains(x)) return error.AlreadyIn;
@@ -255,6 +254,7 @@ fn run(al: anytype, c: anytype, z: anytype) !u64 {
 
 
     // Finish //
+    const m = "xn";
     const l = "rx";
 
 
@@ -283,11 +283,15 @@ fn run(al: anytype, c: anytype, z: anytype) !u64 {
     var i: u64 = 0;
 
     const d = 100000000;
+//    const d = 1;
 
     while (true) {
         defer i += 1;
 
-        if (i % d == 0) deb("i", .{i+1, tst() - t});
+        if (i % d == 0) {
+//            puts("", "");
+            deb("i", .{i+1, tst() - t});
+        }
 
         try q.append(e);
 
@@ -297,9 +301,18 @@ fn run(al: anytype, c: anytype, z: anytype) !u64 {
 
             for (q.items) |s| {
 
-                if (try fin(s, l)) j += 1;
+                if (try fin(s, S.L, l)) j += 1;
                 
                 try pla(c, s, &n);
+
+//                if (try fin(s, S.H, m)) {
+                if (try prx(c, m)) {
+
+                    putd("i", i);
+
+                    try prc(c, m);
+                }
+
             }
 
             q.clearRetainingCapacity();
@@ -312,7 +325,15 @@ fn run(al: anytype, c: anytype, z: anytype) !u64 {
 
         }
 
-        if (j > 0) putd(">>>", i+1);
+        if (j > 0) {
+
+            putd("i", i);
+            putd("j", j);
+
+            try prc(c, m);
+
+            if (i >= 100) break;
+        }
 
         if (j == 1) break;
     }
@@ -357,15 +378,6 @@ fn pre(
     }
 }
 
-fn prs(n: anytype) void {
-    if (dbg.*) {
-
-        const hl = if (n.t == S.L) "low" else "high";
-
-        dpr("{s} -{s}-> {s}\n", .{n.f, hl, n.n});
-    }
-}
-
 fn pla(
     c: anytype,
     s: anytype,
@@ -391,7 +403,7 @@ fn pla(
             try fli(c, &m, s, p, q, &n),
 
         T.C =>
-            try con(&c.b, s, p, q, &n),
+            try con(c, s, p, q, &n),
 
 //        else => {
 //            try err("pla; swi", m.t);
@@ -436,19 +448,24 @@ fn fli(
 }
 
 fn con(
-    b: anytype,    // connections from
-    s: anytype,    // signal rec.
-    p: anytype,    // paths from mod.
+    c: anytype,    // []connections S
+    s: anytype,    // cur. signal
+    p: anytype,    // paths from
     q: anytype,    // queue
-    n: anytype     // q. elem
+    n: anytype     // next elem
 ) !void {
 
 //    deb("con", s.t);
 
-    try b.put(s.n, s.f, s.t);
+    try c.b.put(s.n, s.f, s.t);
 
     // read all froms //
-    var l = try b.get(s.n);
+    var l = try c.b.get(s.n);
+
+//    if (try fin(s, S.H, "xn")) {
+//
+//        prs(s);        
+//    }
 
     var k = l.valueIterator();
 
@@ -484,13 +501,85 @@ fn enq(p: anytype, n: anytype, q: anytype) !void {
     }
 }
 
-fn fin(s: anytype, l: anytype) !bool {
+fn fin(s: anytype, t: anytype, l: anytype) !bool {
 
 //    const r = try c.get(l);
 
-    if (s.t != S.L) return false;
+    if (s.t != t) return false;
+
+//    puts(":", s.n);
 
     return eql(s.n, l);
+}
+
+fn prs(n: anytype) void {
+//    if (dbg.*) {
+
+        const hl = if (n.t == S.L) "low" else "high";
+
+        dpr("{s} -{s}-> {s}\n", .{n.f, hl, n.n});
+//    }
+}
+
+fn pra(c: anytype) !void {
+
+    puts("", "");
+
+    var i = c.a.keyIterator();
+
+    while (i.next()) |k| {
+
+        // TODO: switch //
+        try wip();
+        try prf(c, k.*);
+    }
+}
+
+fn prf(c: anytype, k: anytype) !void {
+
+    const m = try c.get(k);
+
+    if (m.t != T.F) return;
+
+    const of = if (m.s == S.H) "on" else "off";
+
+    dpr("{s}: {s}\n", .{k, of});
+}
+
+fn prc(c: anytype, x: anytype) !void {
+
+//    if (m.t != T.C) return;
+
+    var e = try c.b.get(x);
+
+    var i = e.keyIterator();
+
+    while (i.next()) |k| {
+
+        const s = e.get(k.*) orelse return error.Missing;
+
+        const hl = if (s == S.L) "low" else "high";
+
+        dpr("[{s}] {s}: {s}\n", .{x, k.*, hl});
+    }
+}
+
+fn prx(c: anytype, x: anytype) !bool {
+
+    var e = try c.b.get(x);
+
+    var i = e.keyIterator();
+
+    var n: u64 = 0;
+
+    while (i.next()) |k| {
+
+        const s = e.get(k.*) orelse return error.Missing;
+
+        if (s == S.H) n+= 1; 
+    }
+
+    return (n > 2);
 }
 
 
