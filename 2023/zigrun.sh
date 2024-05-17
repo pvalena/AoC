@@ -69,7 +69,8 @@ f="adventofcode${s}.zig"
 l="out${s}.log"
 
 [[ -n "$H" ]] && {
-  h=$(bc -q <<< "($(tput lines)/2)")
+#  h=$(bc -q <<< "($(tput lines)/2)")
+  h="$(tput lines)"
   H="| head -n $h"
 #  H="| head -n ${h}"
 }
