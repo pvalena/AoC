@@ -65,7 +65,7 @@ pub fn err(comptime l: anytype, d: anytype) !void {
 
     deb(s, d);
 
-    debug.print("\n", .{});
+    prs("\n");
 
     return error.err;
 }
@@ -118,12 +118,12 @@ pub fn lin(comptime l: anytype, i: anytype) void {
     if (l.len < 3) {
         const k = 3 - l.len;
 
-        for (0..k) |_| debug.print(" ", .{});
+        for (0..k) |_| prs(" ");
     }
-    debug.print(l ++ ": ", .{});
+    prs(l ++ ": ");
 
     for (0..i) |_| {
-        debug.print(" ", .{});
+        prs(" ");
     }
 
     debug.print("^ {}\n", .{i});
@@ -154,9 +154,9 @@ pub fn out(comptime l: anytype, f: anytype, s: ?[]i64, c: anytype) void {
     if (l.len < 3) {
         const k = 3 - l.len;
 
-        for (0..k) |_| debug.print(" ", .{});
+        for (0..k) |_| prs(" ");
     }
-    debug.print(l ++ ": ", .{});
+    prs(l ++ ": ");
 
     for (f.items) |t| {
 
@@ -166,13 +166,13 @@ pub fn out(comptime l: anytype, f: anytype, s: ?[]i64, c: anytype) void {
     }
 
     if (s) |ss| {
-        debug.print(" <- ", .{});
+        prs(" <- ");
 
         for (ss) |v| {
             debug.print("{} ", .{v});
         }
     }
-    debug.print("\n", .{});
+    prs("\n");
 }
 
 pub fn out2(comptime l: anytype, d: anytype, s: anytype, c: anytype) void {
@@ -193,7 +193,7 @@ pub fn out2(comptime l: anytype, d: anytype, s: anytype, c: anytype) void {
 
     }
 
-    debug.print("\n", .{});
+    prs("\n");
 }
 
 pub fn pr(comptime f: anytype, s: anytype) void {
@@ -204,6 +204,18 @@ pub fn dpr(comptime f: anytype, s: anytype) void {
     if (!dbg) return;
 
     debug.print(f, s);
+}
+
+pub fn prs(comptime f: anytype) void {
+    if (!dbg) return;
+
+    debug.print(f, .{});
+}
+
+pub fn prl() void {
+    if (!dbg) return;
+
+    prs("\n");
 }
 
 pub fn gen(comptime T: anytype) type {
@@ -559,6 +571,21 @@ pub fn genH(comptime T: anytype) type {
             return t.contains(cc);
         }
 
+        pub fn get(sl: anytype, p: anytype) T {
+
+            return sl.l.get(p) orelse return error.missing;
+        }
+
+        pub fn clearRetainingCapacity(sl: anytype) T {
+
+            for (sl.d.items) |ii| {
+
+//                var i = ii;
+                ii.clearRetainingCapacity();
+
+            }
+        }
+
         pub fn get2(sl: anytype, p: anytype) T {
 
             return sl.get(p[0], p[1]);
@@ -751,7 +778,7 @@ pub fn phk(comptime l: anytype, a: anytype) void {
 
     if (!dbg.*) return;
 
-    dpr("\n" ++ l ++ "[k]: ", .{});
+    prs("\n" ++ l ++ "[k]: ");
 
     var k = a.keyIterator();
 
@@ -759,14 +786,14 @@ pub fn phk(comptime l: anytype, a: anytype) void {
         dpr("[{}, {}] ", .{v[0], v[1]});
     }
 
-    dpr("\n", .{});
+    prl();
 }
 
 pub fn pra(a: anytype) void {
 
     if (!dbg.*) return;
 
-    pr("\n", .{});
+    prl();
 
     for (a.items(), 0..) |rr, i| {
 
@@ -776,20 +803,20 @@ pub fn pra(a: anytype) void {
     
         if (r.len <= 0) continue;
     
-        pr("   ", .{});
+        prs("   ");
 
         for (r, 0..) |l, j| {
 
             _ = j;
 
-            pr("{any}", l);
-//            pr("{c}", .{dis(l)});
+            dpr("{any}", l);
+//            dpr("{c}", .{dis(l)});
         }
 
-        pr("\n", .{});
+        prl();
     }
 
-    pr("\n", .{});
+    prl();
 }
 
 

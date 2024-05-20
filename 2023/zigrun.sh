@@ -8,6 +8,7 @@ set -o pipefail
 con () {
   echo
   read "?--> Continue?" ||:
+  clear
 }
 
 ###
@@ -89,6 +90,8 @@ while :; do
           && exit
       " \
         | tee "$l"
+
+#    set -x
 
     [[ -n "$V" ]] && {
       grep -qE "^\s*=> ${V}$" "$l" || {
