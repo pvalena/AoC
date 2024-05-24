@@ -34,28 +34,31 @@ pub fn deb(comptime s: anytype, d: anytype) void {
 //
 //  }
 
-    debug.print(s ++ ": {any}\n", .{d});
+    dpr(s ++ ": {any}\n", .{d});
 }
 
 pub fn puts(comptime ll: anytype, d: anytype) void {
-    
+    if (!dbg) return;
+
     const l = if (ll.len > 0) ll ++ ": " else ll;
 
-    debug.print(l ++ "{s}\n", .{d});
+    dpr(l ++ "{s}\n", .{d});
 }
 
 pub fn putc(comptime ll: anytype, d: anytype) void {
+    if (!dbg) return;
     
     const l = if (ll.len > 0) ll ++ ": " else ll;
 
-    debug.print(l ++ "{c}\n", .{d});
+    dpr(l ++ "{c}\n", .{d});
 }
 
 pub fn putd(comptime ll: anytype, d: anytype) void {
+    if (!dbg) return;
 
     const l = if (ll.len > 0) ll ++ ": " else ll;
 
-    debug.print(l ++ "{d}\n", .{d});
+    dpr(l ++ "{d}\n", .{d});
 }
 
 pub fn err(comptime l: anytype, d: anytype) !void {
@@ -126,7 +129,7 @@ pub fn lin(comptime l: anytype, i: anytype) void {
         prs(" ");
     }
 
-    debug.print("^ {}\n", .{i});
+    dpr("^ {}\n", .{i});
 }
 
 
@@ -162,14 +165,14 @@ pub fn out(comptime l: anytype, f: anytype, s: ?[]i64, c: anytype) void {
 
         const v = c(t);
 
-        debug.print("{c}", .{v});
+        dpr("{c}", .{v});
     }
 
     if (s) |ss| {
         prs(" <- ");
 
         for (ss) |v| {
-            debug.print("{} ", .{v});
+            dpr("{} ", .{v});
         }
     }
     prs("\n");
