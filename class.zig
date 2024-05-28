@@ -114,6 +114,15 @@ pub fn ini(al: anytype, tf: anytype, np: *u64) ![]u8 {
     return d;
 }
 
+pub fn toc(
+    j: anytype
+
+) u8 {
+
+    const q: u8 = @intCast(j);
+    return q + 'A';
+}
+
 pub fn lin(comptime l: anytype, i: anytype) void {
 
     if (!dbg) return;
@@ -515,6 +524,152 @@ pub fn gen2S(comptime T: anytype) type {
     };
 }
 
+pub fn genK(D: anytype, T: anytype) type {
+
+    const Q = [D]u64;
+
+    const A = Hash(Q, T);
+
+    const KV = struct {
+        Q,
+        T 
+    };
+
+    return struct {
+        a: A,
+        b: Q,
+
+        l: mem.Allocator,
+
+        k: A.Iterator,
+
+        pub fn init(l: anytype) !@This() {
+
+            var c: @This() = undefined;
+
+            c.a = A.init(l);
+
+            c.b = switch (D) {
+                    2 => .{0, 0},
+                    3 => .{0, 0, 0},
+                    else => return error.init,
+                };
+                    
+            c.l = l;
+
+            return c;
+        }
+
+        pub fn clone(o: anytype) !@This() {
+
+            var c: @This() = undefined;
+
+            c.a = try o.a.clone();
+
+            c.b = o.b;
+            c.l = o.l;
+
+            return c;
+        }
+
+    //    pub fn new(c: anytype) M {
+    //        var m: M = undefined;
+    //
+    //        m.c = Array(N).init(c.l);
+    //
+    //        return m;
+    //    }
+
+        pub fn count(c: anytype) u64 {
+
+            return c.a.count();
+        }
+
+        pub fn clear(c: anytype) void {
+
+            c.a.clearRetainingCapacity();
+        }
+
+        pub fn add(c: anytype, k: anytype, v: anytype) !void {
+
+            for (0 .. D) |i| {
+
+                if (k[i] > c.b[i]) {
+                    c.b[i] = k[i];
+                }
+            }
+
+            try c.a.put(k, v);
+        }
+
+        pub fn remove(c: anytype, k: anytype) !void {
+
+            if (c.a.swapRemove(k)) return;
+
+            try err("C.remove", k);
+        }
+
+        pub fn get(c: anytype, k: Q) !T {
+
+//            var k = n;
+//
+//            for (0..D) |z| {
+//                const m = c.b[z] + 1;
+//
+//                if (k[z] > c.b[z]) k[z] %= m;
+//            }
+
+            return c.a.get(k) orelse return error.dataMissing;
+        }
+
+        pub fn contains(c: anytype, k: anytype) bool {
+
+//            var k = n;
+//
+//            for (0..D) |z| {
+//                const m = c.b[z] + 1;
+//
+//                if (k[z] > c.b[z]) k[z] %= m;
+//            }
+
+            return c.a.contains(k);
+        }
+
+        pub fn iterator(c: anytype) void {
+
+            c.k = c.a.iterator();
+        }
+
+        pub fn next(c: anytype) ?KV {
+
+            var kv: ?KV = null;
+                        
+            if (c.k.next()) |e| {
+
+//                const x = try c.get(l);
+
+                kv = .{e.key_ptr.*, e.value_ptr.*};
+            }
+
+            return kv;
+        } 
+
+        pub fn deinit(c: anytype) void {
+    //        var a = c.a;
+
+    //        var i = a.valueIterator();
+    //
+    //        while (i.next()) |v| {
+    //            v.c.deinit();
+    //        }
+
+            c.a.deinit();
+            
+    //        c.b.deinit();
+        }
+    };
+}
+
 pub fn genH(comptime T: anytype) type {
     const N = HashArray(T, void);
 
@@ -679,6 +834,10 @@ pub fn eql(d: anytype, s: anytype) bool {
     return mem.eql(u8, d, s);
 }
 
+pub fn eq2(d: anytype, s: anytype) bool {
+    return d[0] == s[0] and d[1] == s[1];
+}
+
 pub fn rep(aa: anytype, l: anytype) !Array(@TypeOf(l)) {
 
     var a = aa;
@@ -735,21 +894,6 @@ pub fn sort(d: anytype) void {
 pub fn sort2(d: anytype) void {
 
     mem.sort([2]u64, d.*, {}, comptime cmp0([2]u64));
-}
-
-pub fn setx(c: anytype, x: anytype, i: anytype, j: anytype) !bool {
-
-    assert(i < j);
-
-    const r = .{i, j};
-
-    if (!c.chc(x, r)) {
-        try c.set2(.{x, r});
-
-        return true;
-    }
-
-    return false;
 }
 
 pub fn wal(l: anytype, z: anytype) !bool {
@@ -820,6 +964,113 @@ pub fn pra(a: anytype) void {
     }
 
     prl();
+}
+
+pub fn col(
+    x: anytype,
+    y: anytype,
+    g: anytype
+
+) !bool {
+
+    const n = x.k;
+    const d = x.d;
+
+    const o = y.k;
+
+    var t = false;
+
+    for (0..3) |i| {
+
+        if (n[i] != o[i]) continue;
+
+        var j, var k = try oth(i);
+
+        for (0..2) |_| {
+
+            if (d == j and n[d] <= o[d] and o[d] <= x.v) {
+
+                const e = y.d;
+
+                if (e == k and o[e] <= n[e] and n[e] <= y.v) return true;
+
+                if (e == d and o[k] == n[k]) return true;
+            }
+
+            swp(&j, &k);
+        }
+
+        t = true;
+    }
+
+    if (!t) return false;
+
+    var z = n;
+
+    if (n[d] < x.v+1) {} else try err("x", x);
+
+    for (n[d] .. x.v+1) |a| {
+
+//        if (a % 10000 == 0) deb("a", a);
+
+//        const e, const f = try oth(d);
+
+        z[d] = a;
+
+        if (try cll(y, z, g)) return true;
+    }
+
+    return false;
+}
+
+pub fn cll(
+    y: anytype,
+    n: anytype,
+    w: anytype
+
+) !bool {
+    const o = y.k;
+    const g = y.d;
+
+    const e, const f = try oth(g);
+
+    // o <- y //
+    const r = (n[e] == o[e] and n[f] == o[f] and o[g] <= n[g] and n[g] <= y.v);
+
+//    if (r or w) deb("cll", .{n, o, y.d, y.v, r});
+
+    _ = w;
+    
+    return r;
+}
+
+pub fn oth(
+    i: anytype,
+
+) ![2]u64 {
+    return switch(i) {
+        0 => .{1, 2},
+        1 => .{0, 2},
+        2 => .{0, 1},
+
+        else => return error.oth
+    };
+}
+
+pub fn dup(
+    i: anytype,
+
+) @TypeOf(i) {
+
+    const T = @TypeOf(i);
+
+    var n: T = undefined;
+
+    for (i, 0..) |v, j| {
+        n[j] = v;
+    }
+
+    return n;
 }
 
 
