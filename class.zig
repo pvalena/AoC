@@ -1044,6 +1044,15 @@ pub fn cll(
     return r;
 }
 
+pub fn max(
+    i: anytype,
+    j: anytype,
+
+) @TypeOf(i) {
+
+    return if (i >= j) i else j;
+}
+
 pub fn oth(
     i: anytype,
 
