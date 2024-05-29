@@ -102,13 +102,8 @@ pub fn ini(al: anytype, tf: anytype, np: *u64) ![]u8 {
     const a = args.next();
 
     if (a) |n| {
-        const v = fmt.parseUnsigned(u64, n, 10) catch |e| {
-            err("Invalid int", n) catch {};
 
-            return e;
-        };
-
-        np.* = v;
+        np.* = try num(u64, n);
     }
 
     return d;
@@ -120,7 +115,7 @@ pub fn toc(
 ) u8 {
 
     const q: u8 = @intCast(j);
-    return q + 'A';
+    return 'A' + q;
 }
 
 pub fn lin(comptime l: anytype, i: anytype) void {
@@ -524,11 +519,11 @@ pub fn gen2S(comptime T: anytype) type {
     };
 }
 
-pub fn genK(D: anytype, T: anytype) type {
+pub fn genK(H: anytype, D: anytype, T: anytype) type {
 
     const Q = [D]u64;
 
-    const A = Hash(Q, T);
+    const A = H(Q, T);
 
     const KV = struct {
         Q,
@@ -609,6 +604,16 @@ pub fn genK(D: anytype, T: anytype) type {
             try err("C.remove", k);
         }
 
+        pub fn pop(c: anytype) ?KV {
+
+            const e = c.a.popOrNull();
+
+            if (e) |k|
+                return .{k.key, k.value};
+
+            return null;
+        }
+
         pub fn get(c: anytype, k: Q) !T {
 
 //            var k = n;
@@ -620,6 +625,19 @@ pub fn genK(D: anytype, T: anytype) type {
 //            }
 
             return c.a.get(k) orelse return error.dataMissing;
+        }
+
+        pub fn getn(c: anytype, k: Q) !?T {
+
+//            var k = n;
+//
+//            for (0..D) |z| {
+//                const m = c.b[z] + 1;
+//
+//                if (k[z] > c.b[z]) k[z] %= m;
+//            }
+
+            return c.a.get(k);
         }
 
         pub fn contains(c: anytype, k: anytype) bool {
@@ -806,7 +824,7 @@ pub fn genH(comptime T: anytype) type {
     };
 }
 
-pub fn num(v: anytype, t: anytype) !t {
+pub fn num(t: anytype, v: anytype) !t {
     var n: t = undefined;
 
     if (v[0] >= '0' and v[0] <= '9') {
@@ -821,6 +839,17 @@ pub fn num(v: anytype, t: anytype) !t {
 
         return error.num;
     }
+
+    return n;
+}
+
+pub fn nus(t: anytype, v: anytype) !t {
+
+    const n = fmt.parseInt(t, v, 10) catch |e| {
+        err("Invalid int", v) catch {};
+
+        return e;
+    };
 
     return n;
 }
@@ -1080,6 +1109,26 @@ pub fn dup(
     }
 
     return n;
+}
+
+fn itr(
+    i: anytype,
+    x: anytype,
+    k: anytype,
+    n: anytype,
+    c: anytype,
+
+) bool {
+
+    if (i == 0 and n[x] <= 0)
+        return true;
+
+    if (i == 2 and n[x] >= c.b[x])
+        return true;
+
+    n[x] = k[x] + i - 1;
+
+    return false;
 }
 
 
