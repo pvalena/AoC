@@ -174,27 +174,26 @@ fn par(g: anytype, d: []u8) !C {
 }
 
 
-// DynData //
+// Preset //
 const D = 2;
-//const Q = [L]u64;
-const Q = Hash(u64, void);
+const Q = [L]u64;
+//const Q = Hash(u64, void);
 const V = genK(Hash, D, Q);
 
 const B = .{200000000000000, 400000000000000};
-//const E = .{7, 27};
+//const E = .{7, 27}; 
 
 // Skip spaces = speed //
-const S = 100000;
+const S = 1000000;
 
 // Trunc coords = memory //
-const M = 10000;
+const M = 50000000;
 
 
 // Run //
 fn run(a: anytype, c: anytype, g: anytype) !u64 {
 
-    // Preset //
-    var s: u64 = S;
+    const s: u64 = S;
     const r: [D]u64 = B;
 
 
@@ -202,7 +201,7 @@ fn run(a: anytype, c: anytype, g: anytype) !u64 {
     if (g > 0) {
 
         G.* = true;
-        s = g;
+//        s = g;
     }
 
     // Timestamp //
@@ -246,7 +245,7 @@ fn run(a: anytype, c: anytype, g: anytype) !u64 {
         prl();
         prc(b - i, .{k[0][0..D], k[1][0..D], tst() - t});
 
-        try are(a, k, i, &n, r, s);
+        try are(a, k, i, &n, r, s, M);
     }
 
     return try fin(&n, b);
@@ -259,8 +258,9 @@ fn are(
     q: anytype,
     r: anytype,
     s: anytype,
+    m: anytype
 
-) !void {
+ ) !void {
 
     const o, const v = k;
 
@@ -302,7 +302,7 @@ fn are(
         
         for (0 .. D) |i| {
 
-            n[i] /= M;
+            n[i] /= m;
         }
 
         // In Range //
@@ -313,32 +313,37 @@ fn are(
 
             z = x;
 
-//            var d = true;
-//
-//            for (0..L) |i| {
-//
-//                if (z[i] == E) {
-//
-//                    z[i] = j;
-//    
-//                    if (i+1 < L) z[i+1] = E;
-//
-//                    d = false;
-//                }
-//            }
-//
-//            if (d) try err("d", n);
+            var d = true;
+
+            for (0..L) |i| {
+
+                if (z[i] == j) {
+
+                    d = false;
+                    break;
+                }
+
+                if (z[i] == E) {
+
+                    z[i] = j;
+    
+                    if (i+1 < L) z[i+1] = E;
+
+                    d = false;
+                }
+            }
+
+            if (d) try err("d", n);
 
         } else {
-//            z[0] = j;
-//            z[1] = E;
+            z[0] = j;
+            z[1] = E;
+            _ = a;
 
-//            _ = a;
-
-            z = Q.init(a);
+//            z = Q.init(a);
         }
 
-        try z.put(j, {});
+//        try z.put(j, {});
 
         try q.add(n, z);
     }
@@ -354,45 +359,57 @@ fn fin(
 ) !u64 {
 
     prl();
+    prs("-----------------------------------------------------------");
+    prl();
     putd("n", n.count());
 
+//    try pra(c, z);
+
     var x: u64 = 0;
+//    var j: u64 = 0;
 
     n.iterator();
 
     while (n.next()) |k| {
 
-        const l, var q = k;
+        const l, var z = k;
+        var y: u64 = 0;
 
-        defer q.deinit();
-        const y = q.count();
+        for (0..L) |i| {
 
-//        var y: usize = 0;
-//
-//        for (0..L) |i| {
-//
-//            if (y <= 0) {
-//
-//                if (z[i] == E) y = i;
-//
-//            } else {
-//
-//                z[i] = 0;
-//            }
-//        } 
+            if (y > 0) {
+                z[i] = 0;
+                continue;
+            }
+
+            if (z[i] == E) {
+                y = i;
+                continue;
+            }
+
+            // Print //
+
+            z[i] = b - z[i];            
+        } 
+
+        if (y <= 0) y = L;
 
         if (y <= 1) continue;
 
-        var z = q.keyIterator();
+        x += 1;
 
-        while (z.next()) |w| {
+        if (y != 2) {
 
-            prc(b - w.*, l);
+            dpr(">>> {d}: {d}, {d}, {d}", .{x, z[0], z[1], z[2]});
+
+        } else {
+
+            dpr("> > {d}: {d}, {d}", .{x, z[0], z[1]});
         }
 
-        if (y != 2) pr(">>> {any}\n", .{y});
+        dpr(" | {any}\n", .{l});
 
-        x += 1;
+//        prc(x, z);
     }
 
     if (x <= 0) try err("x", x);
@@ -411,42 +428,22 @@ fn prc(
 
 fn hdr(
     c: anytype,
-    m: anytype,
+    s: anytype,
     r: anytype,
 
 ) void {
     const t = G.*;
     G.* = true;
 
+    prl();
     putd("c", c.count());
-    deb("m", m);
+    deb("s", s);
     deb("r", r);
+    deb("M", M);
 
     G.* = t;
 }
 
-//fn fin(
-//    c: anytype,
-//    z: anytype,
-//
-//) !u64 {
-//
-//    var y = z.count();
-//
-//    if (y <= 0) return 0;
-//
-//    y -= 1;
-//
-////    prl();
-////    prs("-----------------------------------------------------------");
-//    dpr("\n  z: {any}\n", .{y});
-//
-//    try pra(c, z);
-//
-//    defer z.deinit();
-//
-//    return y;
-//}
 
 //// Diverge //
 //fn div(
