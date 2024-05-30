@@ -184,10 +184,10 @@ const B = .{200000000000000, 400000000000000};
 //const E = .{7, 27}; 
 
 // Skip spaces = speed //
-const S = 1000000;
+const S = 5*100000;
 
 // Trunc coords = memory //
-const M = 50000000;
+const M = 3*10000000;
 
 
 // Run //
@@ -330,20 +330,19 @@ fn are(
                     if (i+1 < L) z[i+1] = E;
 
                     d = false;
+                    break;
                 }
             }
 
-            if (d) try err("d", n);
+            if (d) deb("d", .{n, j});
 
         } else {
+            z = .{0,0,0};
             z[0] = j;
             z[1] = E;
             _ = a;
 
-//            z = Q.init(a);
         }
-
-//        try z.put(j, {});
 
         try q.add(n, z);
     }
@@ -377,14 +376,9 @@ fn fin(
 
         for (0..L) |i| {
 
-            if (y > 0) {
-                z[i] = 0;
-                continue;
-            }
-
             if (z[i] == E) {
                 y = i;
-                continue;
+                break;
             }
 
             // Print //
@@ -407,7 +401,7 @@ fn fin(
             dpr("> > {d}: {d}, {d}", .{x, z[0], z[1]});
         }
 
-        dpr(" | {any}\n", .{l});
+        dpr("    | {any}\n", .{l});
 
 //        prc(x, z);
     }
