@@ -184,10 +184,10 @@ const B = .{200000000000000, 400000000000000};
 //const E = .{7, 27}; 
 
 // Skip spaces = speed //
-const S = 5*100000;
+const S = 3*100000;
 
 // Trunc coords = memory //
-const M = 3*10000000;
+const M = 5*10000000;
 
 
 // Run //
