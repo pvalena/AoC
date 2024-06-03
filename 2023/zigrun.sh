@@ -88,7 +88,8 @@ while :; do
         set -o pipefail; echo; echo; clear; set -x ; \
         timeout ${t} time zig test $a $f 2>&1 $H \
           && exit
-      " \
+
+      " 2 >&1 \
         | tee "$l"
 
 #    set -x
