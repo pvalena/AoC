@@ -3,6 +3,10 @@
 set -xe
 set -o pipefail
 
+# Fx workaround
+
+export LD_LIBRARY_PATH="/usr/lib64/llvm17/lib/"
+
 ###
 
 con () {
@@ -82,6 +86,9 @@ l="out${s}.log"
 #  H="| head -n ${h}"
 }
 
+ta=
+/usr/bin/time --help &>/dev/null || ta='-l'
+
 ###
 
 echo; echo
@@ -113,7 +120,7 @@ while :; do
   set -x
 
   R=
-  ${tme} -l zig run $aa $f -- "data${n}.txt" $D | tee "$l" && {
+  ${tme} ${ta} zig run $aa $f -- "data${n}.txt" $D | tee "$l" && {
     R=$?
     { set +x ; } &>/dev/null
     echo "SUCCESS: $R"

@@ -571,7 +571,7 @@ pub fn gen2S(comptime T: anytype) type {
     };
 }
 
-pub fn genK(H: anytype, D: anytype, T: anytype) type {
+pub fn genK(comptime H: anytype, comptime D: anytype, comptime T: anytype) type {
 
     const Q = [D]u64;
 
