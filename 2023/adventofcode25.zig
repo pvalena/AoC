@@ -183,10 +183,10 @@ fn run(a: anytype, r: anytype, d: anytype) !u64 {
     prs("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
 
     // Debug //
-    if (d > 0) {
+//    if (d > 0) {
 
         G.* = true;
-    }
+//    }
 
 
     // Header //
@@ -194,8 +194,9 @@ fn run(a: anytype, r: anytype, d: anytype) !u64 {
 
     const b = bb.keys();
 
-    try hdr(c, b, true);
+//    try hdr(c, b, true);
 
+//    putd(">> ", d);
 
     // Visited //
     var v = V.init(a);
@@ -213,8 +214,9 @@ fn run(a: anytype, r: anytype, d: anytype) !u64 {
 
     var q: Q = undefined;
 
-    for (g) |x| {
-    for (g) |x2| {
+    for (g, 0..) |x, l| {    if (l != d) continue;
+    
+    for (g, 0..) |x2, l2| {    if (l2 <= d or l2 <= l) continue;
 
         if (x == x2) continue;
         const i = pir(u64, x, x2);
@@ -224,8 +226,9 @@ fn run(a: anytype, r: anytype, d: anytype) !u64 {
         try n.put(i, {});
         defer _ = n.remove(i);
 
-        for (g) |y| {
-        for (g) |y2| {
+        for (g, 0..) |y, l3| {        if (l3 <= d or l3 <= l2) continue;
+
+        for (g, 0..) |y2, l4| {        if (l4 <= d or l4 <= l3) continue;
 
             if (y == y2) continue;
             const j = pir(u64, y, y2);
@@ -237,8 +240,9 @@ fn run(a: anytype, r: anytype, d: anytype) !u64 {
             try n.put(j, {});
             defer _ = n.remove(j);
 
-            for (g) |z| {
-            for (g) |z2| {
+            for (g, 0..) |z, l5| {                if (l5 <= d or l5 <= l4) continue;
+
+            for (g, 0..) |z2, l6| {                if (l6 <= d or l6 <= l5) continue;
 
                 if (z == z2) continue;
                 const k = pir(u64, z, z2);
