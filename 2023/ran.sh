@@ -8,6 +8,12 @@ set -xe
   :
 } || r=
 
+[[ "$1" == "-n" ]] && {
+  shift||:
+  n="$1"
+  :
+} || n=
+
 [[ -n "$1" ]]
 d="$1"
 shift||:
@@ -37,7 +43,9 @@ for i in {$s..$e}; do
     && j=$(($o - $i)) \
     || j=$i
 
-  clear; echo -e "\n\n>>> $j"; set -x
+  [[ -n "$n" ]] || clear
+
+  echo -e "\n\n>>> $j"; set -x
 
   time ./adventofcode${d} data${d}.txt "$j" && break
 
