@@ -86,7 +86,7 @@ while :; do
   [[ -n "$X" ]] || {
     cst "$f" " \
 #        set -x
-        set -o pipefail; echo; echo; clear; set -x ; \
+        { set -o pipefail; echo; echo; set -x } &>/dev/null; clear; \
         timeout ${t} time zig test $a $f 2>&1 $H \
           && exit
 
