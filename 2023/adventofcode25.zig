@@ -168,7 +168,7 @@ fn par(a: anytype, d: []u8) !A {
 }
 
 const P = [2]K;
-const N = HashArray(P, void);
+const N = Hash(P, void);
 
 const Q = [3]P;
 
@@ -222,7 +222,7 @@ fn run(a: anytype, r: anytype, d: anytype) !u64 {
         if (!try c.chc(i)) continue;
 
         try n.put(i, {});
-        defer _ = n.swapRemove(i);
+        defer _ = n.remove(i);
 
         for (g) |y| {
         for (g) |y2| {
@@ -235,7 +235,7 @@ fn run(a: anytype, r: anytype, d: anytype) !u64 {
             if (!try c.chc(j)) continue;
 
             try n.put(j, {});
-            defer _ = n.swapRemove(j);
+            defer _ = n.remove(j);
 
             for (g) |z| {
             for (g) |z2| {
@@ -248,11 +248,11 @@ fn run(a: anytype, r: anytype, d: anytype) !u64 {
                 if (!try c.chc(k)) continue;
 
                 try n.put(k, {});
-                defer _ = n.swapRemove(k);
+                defer _ = n.remove(k);
 
-                const e = n.keys();
+//                const e = n.keys();
 
-                cop(&q, e);
+                cop(&q, n);
 
                 // Try //
                 if (v.contains(q)) continue;
@@ -264,10 +264,10 @@ fn run(a: anytype, r: anytype, d: anytype) !u64 {
                 if (G.* and m % M == 0) {
 //                    prl();
                     dpr("{d}> ", .{tst() - t});
-                    prc(b, e);
+                    prc(b, n);
                 }
 
-                if (try fin(a, c, e)) |w| {
+                if (try fin(a, c, n)) |w| {
 
                     return w;
                 }
@@ -285,9 +285,16 @@ fn cop(
 
 ) void {
     
-    for (e, 0..) |z, i| {
+    var y = e.keyIterator();
 
-        q[i] = z;
+    var i: usize = 0;
+
+    while (y.next()) |z| {
+        defer i += 1;
+
+//    for (e, 0..) |z, i| {
+
+        q[i] = z.*;
     }
 }
 
@@ -337,9 +344,13 @@ fn fin(
 
 
     // Remove // 
-    for (e) |y| {
+    var y = e.keyIterator();
 
-        const i, const j = y;
+    while (y.next()) |l| {
+
+//    for (e) |y| {
+
+        const i, const j = l.*;
 
         try c.remove(i, j);
         try c.remove(j, i);
@@ -428,13 +439,17 @@ fn fin(
 
 fn prc(
     b: anytype,
-    l: anytype,
+    e: anytype,
 
 ) void {
 
-    for (l) |y| {
+    var y = e.keyIterator();
 
-        const i, const j = y;
+    while (y.next()) |z| {
+
+//    for (l) |y| {
+
+        const i, const j = z.*;
 
         const x = .{ b[i], b[j] };
 
