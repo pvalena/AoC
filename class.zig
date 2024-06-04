@@ -9,6 +9,7 @@ pub const debug = std.debug;
 pub const assert = debug.assert;
 pub const stdout = io.getStdOut().writer();
 pub const tst = std.time.timestamp;
+pub const child = std.ChildProcess;
 
 
 // Types

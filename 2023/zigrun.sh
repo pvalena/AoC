@@ -54,6 +54,12 @@ shift ||:
   :
 }
 
+[[ "$1" == '-o' ]] && {
+  O="$1"
+  shift ||:
+  :
+} || O=
+
 [[ "$1" == '-x' ]] && {
   X="$1"
   shift ||:
@@ -106,8 +112,17 @@ while :; do
   echo
   set -x
 
-  ${tme} -l zig run $aa $f -- "data${n}.txt" $D | tee "$l" || echo "FAIL: $?"
+  R=
+  ${tme} -l zig run $aa $f -- "data${n}.txt" $D | tee "$l" && {
+    R=$?
+    { set +x ; } &>/dev/null
+    echo "SUCCESS: $R"
+  } || {
+    R=$?
+    { set +x ; } &>/dev/null
+    echo "FAIL: $R"
+  }
 
-  { set +x ; } &>/dev/null
+  [[ -n "$O" ]] && exit $R
   con
 done
