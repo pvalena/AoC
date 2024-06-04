@@ -35,6 +35,7 @@ const Array = R.Array;
 const Hash = R.Hash;
 const HashArray = R.HashArray;
 const StringHash = R.StringHash;
+const StringHashArray = R.StringHashArray;
 
 const gen = R.gen;
 const genH = R.genH;
@@ -53,13 +54,15 @@ const sort2 = R.sort2;
 const num = R.num;
 const nus = R.nus;
 const sum = R.sum;
+const pir = R.pir;
 
 
 // Globals //
 const G = &R.dbg;
-const A = "25";
-const F = "-t";
+const F = "25-t";
 const E = 999999999;
+const M = 100000;
+
 
 // Input //
 //const T = enum {
@@ -96,17 +99,38 @@ const E = 999999999;
 
 
 // Data //
-//const L = 3;
-const K = []const u8;
-const C = gen2S(void);
+const S = []const u8;
+const K = u64;
+
+const B = StringHashArray(void);
+const C = genH(K);
+
+const A = struct {
+
+    c: C,
+    b: B,
+
+    fn init(a: anytype) @This() {
+        var s: @This() = undefined;
+        
+        s.c = C.init(a);
+        s.b = B.init(a);
+
+        return s;
+    }
+
+    fn deinit(s: anytype) void {
+
+        s.b.deinit();
+        s.c.deinit();
+    }
+};
 
 
 // Logic //
-fn par(g: anytype, d: []u8) !C {
+fn par(a: anytype, d: []u8) !A {
 
-    var c = try C.init(g);
-
-//    var k: [2]K = undefined;
+    var r = A.init(a);
 
     var ls = spl(d, "\n");
     while (ls.next()) |l| {
@@ -114,399 +138,195 @@ fn par(g: anytype, d: []u8) !C {
 
         var i: u64 = 0;
 
-        var z: []const u8 = undefined;
+        var z: K = undefined;
 
         var w = spl(l, ": ");
         while (w.next()) |v| {
             if (v.len == 0) continue;
 
             defer i += 1;
-            
-//            assert(i < L+1);
 
-            if (i == 0) {
-                c.new(v);
-                z = v;
+            if (!r.b.contains(v)) {
+
+                try r.b.put(v, {});
+            }
+
+            const j = r.b.getIndex(v).?;
+
+            if (i <= 0) {
+
+                z = j;
                 continue;
             }
-        
-            try c.add(v, {});
-            try c.put(v, z, {});
-        }
 
-//        deb("add", k);
+            try r.c.put(z, j);
+            try r.c.put(j, z);
+        }
     }
 
-    return c;
+    return r;
 }
 
+const P = [2]K;
+const N = HashArray(P, void);
 
-// Preset //
-const V = StringHash(void);
-const W = StringHash(K);
-//const V = genK(Hash, D, Q);
+const Q = [3]P;
+
+const V = Hash(Q, void);
+
+const W = Hash(K, void);
 
 
 // Run //
-fn run(a: anytype, c: anytype, g: anytype) !u64 {
+fn run(a: anytype, r: anytype, d: anytype) !u64 {
 
-    prs("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-
-//    _ = a;
+    prs("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
 
     // Debug //
-    if (g > 0) {
+    if (d > 0) {
 
         G.* = true;
-//        s = g;
     }
 
-    // Timestamp //
-    const t = tst();
-//    _ = t;
+
+    // Header //
+    const c, const bb = .{r.c, r.b};
+
+    const b = bb.keys();
+
+    try hdr(c, b, true);
+
 
     // Visited //
-    var q = V.init(a);
-    defer q.deinit();
+    var v = V.init(a);
+    defer v.deinit();
 
-    var n = try q.clone();
+    var n = N.init(a);
     defer n.deinit();
 
 
     // Loop //
-    var i: u64 = 0;
+    const t = tst();
 
-    c.iterator();
-    while (c.next()) |w| {
+    const g = c.keys();
+    var m: u64 = 0;
 
-        const k, _ = w;
+    var q: Q = undefined;
 
-        try q.put(k, {});
+    for (g) |x| {
+    for (g) |x2| {
 
-        prl();
-        dpr("{d}> ", .{tst() - t});
+        if (x == x2) continue;
+        const i = pir(u64, x, x2);
 
-        i = 0;
-        var f = false;
+        if (!try c.chc(i)) continue;
 
-        var v: K = undefined;
+        try n.put(i, {});
+        defer _ = n.swapRemove(i);
 
-        while (q.count() > 0) {
-            defer i += 1;
+        for (g) |y| {
+        for (g) |y2| {
 
-//            if (i > 0 and q.count() < c.m) break;
+            if (y == y2) continue;
+            const j = pir(u64, y, y2);
 
-            var j = q.keyIterator();
+            if (eq2(i, j)) continue;
 
-            while (j.next()) |y| {
-                const x = y.*;
+            if (!try c.chc(j)) continue;
 
-                if (i <= 0) v = x;
+            try n.put(j, {});
+            defer _ = n.swapRemove(j);
 
-//                if (v.contains(x)) continue;
+            for (g) |z| {
+            for (g) |z2| {
 
-//                try v.put(x, {});
+                if (z == z2) continue;
+                const k = pir(u64, z, z2);
 
-                if (i > 0) {
-                    if (try plx(a, c, x, v)) |z| {
+                if (eq2(k, i) or eq2(k, j)) continue;
 
-//                        try err("z", z);
-                        return z;
-                    }
-    
-                    f = true;
+                if (!try c.chc(k)) continue;
 
-                    continue;
+                try n.put(k, {});
+                defer _ = n.swapRemove(k);
+
+                const e = n.keys();
+
+                cop(&q, e);
+
+                // Try //
+                if (v.contains(q)) continue;
+
+                try v.put(q, {});
+
+                defer m += 1;
+
+                if (G.* and m % M == 0) {
+//                    prl();
+                    dpr("{d}> ", .{tst() - t});
+                    prc(b, e);
                 }
 
-                try pla(c, x, &n, v);
-            }
+                if (try fin(a, c, e)) |w| {
 
-            prl();
-            swp(&q, &n);
-
-            n.clearRetainingCapacity();
-
-            if (i > 0) break;
-        }
-
-//        v.clearRetainingCapacity();
-        q.clearRetainingCapacity();
-        n.clearRetainingCapacity();
-
-//        if (f) break;
-    }
+                    return w;
+                }
+            }}
+        }}
+    }}
 
     try err("fail", 0);
     return 0;
+}
+
+fn cop(
+    q: anytype,
+    e: anytype,
+
+) void {
+    
+    for (e, 0..) |z, i| {
+
+        q[i] = z;
+    }
 }
 
 fn pla(
     c: anytype,
     x: anytype,
     n: anytype,
-    v: anytype,    
 
 ) !void {
     
     const l = try c.get(x);
 
-//    deb("l", l.count());
-
-    prc(x, l, v);
-
-    var i = l.keyIterator();
-
-    while (i.next()) |y| {
-        const z = y.*;
-
-//        dpr("{s} ", .{z});
+    for (l.keys()) |z| {
 
         try n.put(z, {});
     }
 }
 
-fn plx(
-    a: anytype,
-    c: anytype,
-    x: anytype,
-    v: anytype,    
-
-) !?u64 {
-    
-    const k = try c.get(v);
-    const l = try c.get(x);
-
-    var i = l.keyIterator();
-
-    var s: u64 = 0;
-
-    dpr("{s}: ", .{x});
-
-    while (i.next()) |y| {
-
-        const z = y.*;
-
-        dpr("{s} ", .{z});
-
-        if (k.contains(z)) s += 1;
-    }
-
-    putd(" ", s);
-
-    if (s <= 1) {
-        prl();
-
-        var b = try c.clone();
-        defer b.deinit();
-
-        if (try cut(a, &b, x, v, 2)) |r| {
-
-            return r;
-        }
-    }
-
-    return null;
-}
-
-fn cut(
-    a: anytype,
-    c: anytype,
-    xx: anytype,
-    vv: anytype,
-    rr: anytype,    
-
-) !?u64 {
-
-    var x = xx;
-    var v = vv;
-    var r: u64 = rr;
-
-    dpr(">> {d}: {s}/{s}\n", .{r, x, v});
-
-    const l = try c.remove(x, v);
-
-    const o = try c.remove(v, x);
-
-    if (r <= 0) return try fin(a, c);
-
-    var s: u64 = E;
-
-//    prc(x, l, "");
-
-    var n = W.init(a);
-    defer n.deinit();
-
-    try ins(c, l, x, &n, &s);
-
-    prl();
-
-    try ins(c, o, v, &n, &s);
-
-    prl();
-
-//    deb("s", s);
-
-    var q = try n.clone();
-    defer q.deinit();
-
-    r -= 1;
-
-    var i = n.keyIterator();
-    while (i.next()) |y| {
-
-        const z = y.*;
-
-        const w = n.get(z).?;
-
-        x = z;
-        v = w;
-
-        prl();
-
-        var b = try c.clone();
-        defer b.deinit();
-
-        if (try cut(a, &b, x, v, r)) |h| {
-
-            return h;
-        }
-    }
-
-    while (n.count() > 0) {
-        q.clearRetainingCapacity();
-
-        i = n.keyIterator();
-        while (i.next()) |y| {
-
-            const z = y.*;
-
-            const w = n.get(z).?;
-
-            dpr(">>> {s}: {s}\n", .{z, w});
-
-            const k = try c.get(z);
-
-    //        var h = k.clone();
-    //        defer h.deinit();
-    //        _ = h.remove(w);
-
-            try ins(c, k, z, &q, &s);
-
-    //        _ = try ply(c, z, w);
-
-            prl();
-        }
-
-        swp(&n, &q);
-
-        if (s <= 1) break;
-    }
-
-    i = n.keyIterator();
-    while (i.next()) |y| {
-
-        const z = y.*;
-
-        const w = n.get(z).?;
-
-        x = z;
-        v = w;
-
-        prl();
-
-        var b = try c.clone();
-        defer b.deinit();
-
-        if (try cut(a, &b, x, v, r)) |h| {
-
-            return h;
-        }
-    }
-
-    return null;
-}
-
-const M = 0;
-
-fn ins(
-    c: anytype,
-    l: anytype,
-    x: anytype,
-    n: anytype,
-    s: anytype,
-
-) !void {
-
-    var i = l.keyIterator();
-    while (i.next()) |y| {
-
-        const z = y.*;
-
-//        if (eql(z, x)) continue;
-//        dpr("{s} ", .{z});
-
-        const m = try ply(c, z, x);
-
-        if (m <= s.* + M) {
-
-            if (m < s.*) {
-
-//                if (m + M < s.*) n.clearRetainingCapacity();
-                s.* = m;
-            }
-
-            try n.put(z, x);
-        }
-    }
-}
-
-fn ply(
-    c: anytype,
-    x: anytype,
-    v: anytype,    
-
-) !u64 {
-    
-    const k = try c.get(v);
-    const l = try c.get(x);
-
-    var i = l.keyIterator();
-
-    var s: u64 = 0;
-
-    dpr("{s}: ", .{x});
-
-    while (i.next()) |y| {
-
-        const z = y.*;
-
-        dpr("{s} ", .{z});
-
-        if (k.contains(z)) s += 1;
-    }
-
-    putd(" ", s);
-
-    return s;
-}
-
 fn fin(
     a: anytype,
-    c: anytype,
+    b: anytype,
+    e: anytype
 
 ) !?u64 {
 
-    prl();
-    prs("-----------------------------------------------------------");
-    prl();
+//    prl();
+//    prs("-----------------------------------------------------------");
+//    prl();
 //    putd("c", c.count());
 
     var t: u64 = 0;
 
+    // Copy //
+    var c = try b.clone();
+    defer c.deinit();
+
 
     // Visited //
-    var q = V.init(a);
+    var q = W.init(a);
     defer q.deinit();
 
     var n = try q.clone();
@@ -516,13 +336,24 @@ fn fin(
     defer o.deinit();
 
 
+    // Remove // 
+    for (e) |y| {
+
+        const i, const j = y;
+
+        try c.remove(i, j);
+        try c.remove(j, i);
+    }
+
+//    try pra(c);
+//    try wip();
+
     // Loop //
     var i: u64 = 0;
 
-    c.iterator();
-    while (c.next()) |y| {
+    const g = c.keys();
 
-        const z, _ = y;
+    for (g) |z| {
 
         if (o.contains(z)) continue;
 
@@ -539,11 +370,11 @@ fn fin(
 
 //            deb("q", q.count());
 
-            var j = q.keyIterator();
+            var w = q.keyIterator();
 
-            while (j.next()) |w| {
+            while (w.next()) |l| {
 
-                const x = w.*;
+                const x = l.*;
 
 //                deb("v", v.count());
 
@@ -551,17 +382,17 @@ fn fin(
                 if (o.contains(x)) unreachable;
 
                 if (i > 1) {
-                    puts("x", x);
+                    putd("x", x);
 
                     try err("i", i);
                 }
 
                 try v.put(x, {});
 
-                try pla(c, x, &n, x);
+                try pla(c, x, &n);
             }
 
-            prl();
+//            prl();
             swp(&q, &n);
 
             n.clearRetainingCapacity();
@@ -569,7 +400,7 @@ fn fin(
 
         const vc = v.count();
 
-        deb("v", vc);
+//        deb("v", vc);
 
         if (i <= 0) {
             swp(&v, &o);
@@ -578,7 +409,7 @@ fn fin(
 
         const oc = o.count();
 
-        deb("o", oc);
+//        deb("o", oc);
 
         assert(oc+vc == c.count());
 
@@ -586,7 +417,7 @@ fn fin(
         break;
     }
 
-    prs("===========================================================\n\n");
+//    prs("===========================================================\n\n");
 
     if (t <= 0) return null;
 
@@ -596,22 +427,76 @@ fn fin(
 }
 
 fn prc(
-    k: anytype,
+    b: anytype,
     l: anytype,
-    v: anytype,
 
 ) void {
 
-    var i = l.keyIterator();
+    for (l) |y| {
 
-    dpr("{s}: ", .{k});
+        const i, const j = y;
 
-    while (i.next()) |x| {
+        const x = .{ b[i], b[j] };
 
-//        if (v.contains(x.*)) continue;
-        if (eql(v, x.*)) continue;
+//        deb("prc", .{ i, j, x });
 
-        dpr("{s} ", .{x.*});        
+        dpr("{s}/{s} ", x);
+    }
+
+    prl();
+}
+
+fn hdr(
+    c: anytype,
+    b: anytype,
+    e: anytype
+
+) !void {
+
+    const g = c.keys();
+
+    for (g) |k| {
+
+        if (e)            
+            dpr("{s}: ", .{ b[k] })
+        else
+            dpr("{d}: ", .{ k });
+
+        const l = try c.get(k);
+
+        for (l.keys()) |j| {
+
+            const x = .{ b[j] };
+
+            if (e)
+                dpr("{s} ", x)
+            else
+                dpr("{d} ", .{ j });
+                
+        }
+
+        prl();
+    }
+
+    prl();
+}
+
+fn pra(
+    c: anytype,
+
+) !void {
+
+    const g = c.keys();
+
+    for (g) |k| {
+
+        dpr("{d}: ", .{ k });
+
+        const l = try c.get(k);
+
+        dpr("{d} ", .{ l.keys() });                
+
+        prl();
     }
 
     prl();
@@ -624,7 +509,7 @@ fn rmain(l: anytype, nn: anytype) !void {
 
     var n: u64 = nn;
 
-    const f = "data" ++ A ++ F ++ ".txt";
+    const f = "data" ++ F ++ ".txt";
 
     const d = try ini(l, f, &n);
     defer l.free(d);
