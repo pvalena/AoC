@@ -85,11 +85,12 @@ set +x
 while :; do
   [[ -n "$X" ]] || {
     cst "$f" " \
+#        set -x
         set -o pipefail; echo; echo; clear; set -x ; \
         timeout ${t} time zig test $a $f 2>&1 $H \
           && exit
 
-      " 2 >&1 \
+      " 2>&1 \
         | tee "$l"
 
 #    set -x

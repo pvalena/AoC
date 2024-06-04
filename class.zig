@@ -66,6 +66,7 @@ pub fn err(comptime l: anytype, d: anytype) !void {
 
     const s = "\nError[" ++ l ++ "]";
 
+    prl();
     deb(s, d);
 
     prs("\n");
@@ -345,12 +346,14 @@ pub fn gen(comptime T: anytype) type {
 pub fn genS(comptime T: anytype) type {
     const N = Array(T);
 
+    const S = []const u8;
+
     return struct {
 //        var al: G.allocator();
 
         al: mem.Allocator,
         d: StringHash(N),
-        l: []const u8,
+        l: S,
 
         pub fn init(al: anytype) !@This() {
             var sl: @This() = undefined;
@@ -359,14 +362,6 @@ pub fn genS(comptime T: anytype) type {
             sl.d = StringHash(N).init(al);
 
             return sl;
-        }
-
-        pub fn items(sl: anytype) []N {
-            return sl.d.items;
-        }
-
-        pub fn h(sl: anytype) usize {
-            return sl.d.items.len;
         }
 
         pub fn new(sl: anytype, x: anytype) !void {
@@ -427,45 +422,84 @@ pub fn genS(comptime T: anytype) type {
 }
 
 pub fn gen2S(comptime T: anytype) type {
+
+    const S = []const u8;
+
     const N = StringHash(T);
+    const M = StringHash(N);
+
+    const KV = struct {
+        S,
+        N
+    };
 
     return struct {
         al: mem.Allocator,
-        d: StringHash(N),
-        l: []const u8,
+        d: M,
+        l: S,
+        m: u64,
+
+        k: M.Iterator,
 
         pub fn init(al: anytype) !@This() {
             var sl: @This() = undefined;
 
             sl.al = al;
-            sl.d = StringHash(N).init(al);
+            sl.d = M.init(al);
+            sl.m = 0;
 
             return sl;
         }
 
-        pub fn new(sl: anytype, x: anytype) !N {
+        pub fn clone(c: anytype) !@This() {
+            var sl: @This() = undefined;
 
-            const al = sl.al;
+            sl.al = c.al;
 
-            const l = N.init(al);
+//            sl.d = try c.d.clone();
+            sl.d = M.init(c.al);
 
-            var d = sl.d;
+            var j = c.d.keyIterator();
 
-            try d.put(x, l);
+            while (j.next()) |k| {
 
-            sl.d = d;
+                const q = try c.get(k.*);
+
+                const n = try q.clone();
+
+                try sl.d.put(k.*, n);
+            }
+
+
+
+            sl.m = c.m;
+
+            return sl;
+        }
+
+        pub fn new(sl: anytype, x: anytype) void {
+
             sl.l = x;
+        }
+
+        pub fn add(sl: anytype, x: anytype, v: anytype) !void {
+
+            try sl.put(sl.l, x, v);
+        }
+
+        pub fn remove(sl: anytype, x: anytype, v: anytype) !N {
+
+            var l = try sl.get(x);
+            _ = l.remove(v);
+
+            try sl.d.put(x, l);
 
             return l;
         }
 
-        pub fn add(sl: anytype, v: anytype) !void {
+        pub fn count(sl: anytype) usize {
 
-            var l = sl.d.get(sl.l) orelse return error.missing;
-
-            try l.append(v);
-
-            try sl.d.put(sl.l, l);
+            return sl.d.count();
         }
 
         pub fn put(sl: anytype, x: anytype, y: anytype, v: anytype) !void {
@@ -477,15 +511,19 @@ pub fn gen2S(comptime T: anytype) type {
                     d.get(x) orelse return error.missing,
 
                 false =>
-                    try sl.new(x),
+                    N.init(sl.al),
             };
 
             try l.put(y, v);
 
+            const c = l.count();
+
+            if (sl.m < c) sl.m = c; 
+
             try sl.d.put(x, l);
         }
 
-        pub fn get(sl: anytype, x: anytype) !N {
+        pub fn get(sl: anytype, x: S) !N {
 
             return sl.d.get(x) orelse return error.missing;
         }
@@ -499,6 +537,25 @@ pub fn gen2S(comptime T: anytype) type {
             return sl.d.get(x) orelse return error.missing;
         }
 
+        pub fn iterator(c: anytype) void {
+
+            c.k = c.d.iterator();
+        }
+
+        pub fn next(c: anytype) ?KV {
+
+            var kv: ?KV = null;
+                        
+            if (c.k.next()) |e| {
+
+//                const x = try c.get(l);
+
+                kv = .{e.key_ptr.*, e.value_ptr.*};
+            }
+
+            return kv;
+        } 
+
         pub fn deinit(sl: anytype) void {
 
             var j = sl.d.valueIterator();
@@ -507,13 +564,6 @@ pub fn gen2S(comptime T: anytype) type {
             }
             var d = sl.d;
             d.deinit();
-
-            // ArrayHash
-//            for (sl.d.items) |i| {
-//                i.deinit();
-//
-//            }
-//            sl.d.deinit();
 
         }
     };
