@@ -16,6 +16,7 @@ pub const Array = std.ArrayList;
 pub const Hash = std.AutoHashMap;
 pub const HashArray = std.AutoArrayHashMap;
 pub const StringHash = std.StringHashMap;
+pub const StringHashArray = std.StringArrayHashMap;
 
 
 // Gvar
@@ -37,7 +38,7 @@ pub fn deb(comptime s: anytype, d: anytype) void {
     dpr(s ++ ": {any}\n", .{d});
 }
 
-pub fn puts(comptime ll: anytype, d: anytype) void {
+pub fn puts(comptime ll: anytype, d: []const u8) void {
     if (!dbg) return;
 
     const l = if (ll.len > 0) ll ++ ": " else ll;
@@ -739,70 +740,95 @@ pub fn genK(H: anytype, D: anytype, T: anytype) type {
 }
 
 pub fn genH(comptime T: anytype) type {
+
     const N = HashArray(T, void);
+
+    const A = HashArray(T, N);
 
     return struct {
 //        var al: G.allocator();
 
-        al: mem.Allocator,
-        d: Array(N),
+        a: mem.Allocator,
+        d: A,
         l: *N,
 
-        pub fn init(al: anytype) @This() {
+        pub fn init(a: anytype) @This() {
             var s: @This() = undefined;
 
-            s.al = al;
-            s.d = Array(N).init(al);
+            s.a = a;
+            s.d = A.init(a);
+          
+            return s;
+        }
+
+        pub fn clone(o: anytype) !@This() {
+            var s: @This() = undefined;
+
+            s.a = o.a;
+
+            s.d = A.init(o.a);
+
+            var k = o.d.iterator();
+
+            while (k.next()) |e| {
+
+                const i = e.key_ptr.*;
+                const j = e.value_ptr.*;
+
+                const n = try j.clone();
+
+                try s.d.put(i, n);
+            }
           
             return s;
         }
 
         pub fn items(sl: anytype) []N {
-            return sl.d.items;
+            return sl.d.values();
         }
 
-        pub fn h(sl: anytype) usize {
-            return sl.d.items.len;
+        pub fn keys(sl: anytype) []T {
+            return sl.d.keys();
+        }
+
+        pub fn count(s: anytype) usize {
+            return s.d.count();
         }
 
         pub fn w(sl: anytype) usize {
-            return sl.l.items.len;
+            return sl.l.keys().len;
         }
 
-        pub fn new(sl: anytype) !void {
-            const l = N.init(sl.al);
+        pub fn new(s: anytype, i: anytype) !void {
 
-            try sl.d.append(l);
+            if (s.d.contains(i)) return;
 
-            const i = sl.d.items;
+            var l = N.init(s.a);
 
-            sl.l = &i[i.len-1];
+            try s.d.put(i, l);
+
+            s.l = &l;
         }
 
-        pub fn add(sl: anytype, v: anytype) !void {
-            try sl.l.put(v, {});
+        pub fn add(s: anytype, i: anytype) !void {
+            try s.l.put(i, {});
         }
 
-        pub fn chc(sl: anytype, ii: anytype, cc: anytype) bool {
+        pub fn get(sl: anytype, p: anytype) !N {
 
-//            const i: usize = @intCast(ii);
-//            const c: usize = @intCast(cc);
-
-            assert(ii >= 0);
-
-            if (ii >= sl.d.items.len) return false;
-
-            const t = sl.d.items[ii];
-
-            return t.contains(cc);
+            return sl.d.get(p) orelse return error.dataMissing;
         }
 
-        pub fn get(sl: anytype, p: anytype) T {
+        pub fn remove(s: anytype, x: anytype, v: anytype) !void {
 
-            return sl.l.get(p) orelse return error.missing;
+            var l = try s.get(x);
+
+            _ = l.swapRemove(v);
+
+            try s.d.put(x, l);
         }
 
-        pub fn clearRetainingCapacity(sl: anytype) T {
+        pub fn clear(sl: anytype) T {
 
             for (sl.d.items) |ii| {
 
@@ -817,53 +843,38 @@ pub fn genH(comptime T: anytype) type {
             return sl.get(p[0], p[1]);
         }
 
-        pub fn set(
-            sl: anytype, ii: anytype, jj: anytype,
-            t: anytype
-        ) !void {
-
-            const i: usize = @intCast(ii);
-            const j: usize = @intCast(jj);
-
-            const c = sl.d.items;
-        
-            assert(i < c.len);
-
-            const r = c[i].items;
-
-            deb("r2", r.len);
-
-            assert(j < r.len);
-
-            const x = r[j];
-
-            _ = switch(t) {
-                T.set => assert(x == T.fre),
-                T.fre => assert(x == T.set),
-            };
-
-            r[j] = t;
-        }
-
         pub fn set2(sl: anytype, p: anytype) !void {
 
             const i = p[0];
             const j = p[1];
 
-            while (i >= sl.d.items.len) {
-                try sl.new();
-            }
-            
             try sl.put(i, j);            
         }
 
-        pub fn put(sl: anytype, i: anytype, j: anytype) !void {
+        pub fn put(s: anytype, i: anytype, j: anytype) !void {
 
-            try sl.d.items[i].put(j, {});
+            try s.new(i);
+
+            var l = try s.get(i);
+
+            try l.put(j, {});
+
+            try s.d.put(i, l);
+        }
+
+        pub fn chc(s: anytype, p: anytype) !bool {
+
+            const i, const j = p;
+
+            const l = try s.get(i);
+
+//            try err("chc", p);
+
+            return l.contains(j);
         }
 
         pub fn deinit(sl: anytype) void {
-            for (sl.d.items) |ii| {
+            for (sl.items()) |ii| {
 
                 var i = ii;
                 i.deinit();
@@ -872,6 +883,11 @@ pub fn genH(comptime T: anytype) type {
             sl.d.deinit();
         }
     };
+}
+
+pub fn pir(comptime T: anytype, i: anytype, j: anytype) [2]T {
+
+    return if (i < j) .{i, j} else .{j, i};
 }
 
 pub fn num(t: anytype, v: anytype) !t {
