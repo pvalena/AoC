@@ -1,4 +1,3 @@
-
 // Const
 pub const std = @import("std");
 
@@ -109,9 +108,12 @@ pub fn ini(al: anytype, tf: anytype, np: *u64) ![]u8 {
         np.* = try num(u64, n);
     }
 
+    prs("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
+
     return d;
 }
 
+// Int to char //
 pub fn toc(
     j: anytype
 
@@ -121,6 +123,7 @@ pub fn toc(
     return 'A' + q;
 }
 
+// Higlight for position in line //
 pub fn lin(comptime l: anytype, i: anytype) void {
 
     if (!dbg) return;
@@ -139,26 +142,8 @@ pub fn lin(comptime l: anytype, i: anytype) void {
     dpr("^ {}\n", .{i});
 }
 
-
-pub fn eut(comptime l: anytype, f: anytype, s: ?[]i64,
-    c: anytype
-) !void {
-    dbg = true;
-
-    out(l, f, s, c);
-    try err("", null);
-}
-
-pub fn eut2(comptime l: anytype, f: anytype, s: ?[]i64,
-    c: anytype
-) !void {
-    dbg = true;
-
-    out2(l, f, s, c);
-    try err("", null);
-}
-
-pub fn out(comptime l: anytype, f: anytype, s: ?[]i64, c: anytype) void {
+// Print 1D array - using display function; with optional slice 
+pub fn out(comptime l: anytype, f: anytype, s: ?[]u64, c: anytype) void {
     if (!dbg) return;
 
     if (l.len < 3) {
@@ -185,6 +170,7 @@ pub fn out(comptime l: anytype, f: anytype, s: ?[]i64, c: anytype) void {
     prs("\n");
 }
 
+// Print 2D Array using `out`
 pub fn out2(comptime l: anytype, d: anytype, s: anytype, c: anytype) void {
     if (!dbg) return;
 
@@ -206,8 +192,22 @@ pub fn out2(comptime l: anytype, d: anytype, s: anytype, c: anytype) void {
     prs("\n");
 }
 
-pub fn pr(comptime f: anytype, s: anytype) void {
-    stdout.print(f, s) catch {};
+pub fn eut(comptime l: anytype, f: anytype, s: ?[]u64,
+    c: anytype
+) !void {
+    dbg = true;
+
+    out(l, f, s, c);
+    try err("", null);
+}
+
+pub fn eut2(comptime l: anytype, f: anytype, s: ?[]u64,
+    c: anytype
+) !void {
+    dbg = true;
+
+    out2(l, f, s, c);
+    try err("", null);
 }
 
 pub fn dpr(comptime f: anytype, s: anytype) void {
@@ -228,12 +228,16 @@ pub fn prl() void {
     prs("\n");
 }
 
+pub fn pr(comptime f: anytype, s: anytype) void {
+    stdout.print(f, s) catch {};
+}
+
+
+// Generic Array => Array => T, 2d //
 pub fn gen(comptime T: anytype) type {
     const N = Array(T);
 
     return struct {
-//        var al: G.allocator();
-
         al: mem.Allocator,
         d: Array(N),
         l: *N,
@@ -345,6 +349,8 @@ pub fn gen(comptime T: anytype) type {
     };
 }
 
+
+// Generic StringHash => Array => T, 2d //
 pub fn genS(comptime T: anytype) type {
     const N = Array(T);
 
@@ -411,18 +417,11 @@ pub fn genS(comptime T: anytype) type {
             }
             var d = sl.d;
             d.deinit();
-
-            // ArrayHash
-//            for (sl.d.items) |i| {
-//                i.deinit();
-//
-//            }
-//            sl.d.deinit();
-
         }
     };
 }
 
+// Generic StringHash => StringHash => T, 2d //
 pub fn gen2S(comptime T: anytype) type {
 
     const S = []const u8;
@@ -571,6 +570,7 @@ pub fn gen2S(comptime T: anytype) type {
     };
 }
 
+// Generic coords-based Hash => T, 1d //
 pub fn genK(comptime H: anytype, comptime D: anytype, comptime T: anytype) type {
 
     const Q = [D]u64;
@@ -619,14 +619,6 @@ pub fn genK(comptime H: anytype, comptime D: anytype, comptime T: anytype) type 
             return c;
         }
 
-    //    pub fn new(c: anytype) M {
-    //        var m: M = undefined;
-    //
-    //        m.c = Array(N).init(c.l);
-    //
-    //        return m;
-    //    }
-
         pub fn count(c: anytype) u64 {
 
             return c.a.count();
@@ -668,39 +660,15 @@ pub fn genK(comptime H: anytype, comptime D: anytype, comptime T: anytype) type 
 
         pub fn get(c: anytype, k: Q) !T {
 
-//            var k = n;
-//
-//            for (0..D) |z| {
-//                const m = c.b[z] + 1;
-//
-//                if (k[z] > c.b[z]) k[z] %= m;
-//            }
-
             return c.a.get(k) orelse return error.dataMissing;
         }
 
         pub fn getn(c: anytype, k: Q) !?T {
 
-//            var k = n;
-//
-//            for (0..D) |z| {
-//                const m = c.b[z] + 1;
-//
-//                if (k[z] > c.b[z]) k[z] %= m;
-//            }
-
             return c.a.get(k);
         }
 
         pub fn contains(c: anytype, k: anytype) bool {
-
-//            var k = n;
-//
-//            for (0..D) |z| {
-//                const m = c.b[z] + 1;
-//
-//                if (k[z] > c.b[z]) k[z] %= m;
-//            }
 
             return c.a.contains(k);
         }
@@ -716,8 +684,6 @@ pub fn genK(comptime H: anytype, comptime D: anytype, comptime T: anytype) type 
                         
             if (c.k.next()) |e| {
 
-//                const x = try c.get(l);
-
                 kv = .{e.key_ptr.*, e.value_ptr.*};
             }
 
@@ -725,21 +691,13 @@ pub fn genK(comptime H: anytype, comptime D: anytype, comptime T: anytype) type 
         } 
 
         pub fn deinit(c: anytype) void {
-    //        var a = c.a;
-
-    //        var i = a.valueIterator();
-    //
-    //        while (i.next()) |v| {
-    //            v.c.deinit();
-    //        }
 
             c.a.deinit();
-            
-    //        c.b.deinit();
         }
     };
 }
 
+// Generic Hash => Hash => void, 2d // 
 pub fn genH(comptime T: anytype) type {
 
     const N = HashArray(T, void);
@@ -886,11 +844,13 @@ pub fn genH(comptime T: anytype) type {
     };
 }
 
+// Get ordered pair //
 pub fn pir(comptime T: anytype, i: anytype, j: anytype) [2]T {
 
     return if (i < j) .{i, j} else .{j, i};
 }
 
+// Parse uint //
 pub fn num(t: anytype, v: anytype) !t {
     var n: t = undefined;
 
@@ -901,8 +861,6 @@ pub fn num(t: anytype, v: anytype) !t {
             return e;
         };
     } else {
-//        puts("num", v);
-//        try err("num", v);
 
         return error.num;
     }
@@ -910,6 +868,7 @@ pub fn num(t: anytype, v: anytype) !t {
     return n;
 }
 
+// Parse int //
 pub fn nus(t: anytype, v: anytype) !t {
 
     const n = fmt.parseInt(t, v, 10) catch |e| {
@@ -921,34 +880,22 @@ pub fn nus(t: anytype, v: anytype) !t {
     return n;
 }
 
+// Split int array into slices //
 pub fn spl(d: anytype, s: anytype) mem.SplitIterator(u8, .any) {
     return mem.splitAny(u8, d, s);
-//    return mem.split(u8, d, s);
 }
 
+// Compare 2d arrays //
 pub fn eql(d: anytype, s: anytype) bool {
     return mem.eql(u8, d, s);
 }
 
+// Compare 2d coords //
 pub fn eq2(d: anytype, s: anytype) bool {
     return d[0] == s[0] and d[1] == s[1];
 }
 
-pub fn rep(aa: anytype, l: anytype) !Array(@TypeOf(l)) {
-
-    var a = aa;
-
-    const e = a.items.len;
-
-    try a.append(l);
-
-    if (fin(a, l.l)) |i| {
-        if (i != e) _ = a.swapRemove(i);
-    }
-
-    return a;
-}
-
+// Find index in array, use `eql` function //
 pub fn fin(a: anytype, l: anytype) ?usize {
     var z: ?usize = null;
 
@@ -963,6 +910,7 @@ pub fn fin(a: anytype, l: anytype) ?usize {
     return z;
 }
 
+// 
 pub fn rem(aa: anytype, l: anytype) !Array(@TypeOf(l)) {
 
     var a = aa;
@@ -970,28 +918,32 @@ pub fn rem(aa: anytype, l: anytype) !Array(@TypeOf(l)) {
     const z = fin(a, l);
 
     if (z) |i| {
-        _ = a.orderedRemove(i);       
+        _ = a.swapRemove(i);       
     }
 
     return a;
 }
 
+// Swap two //
 pub fn swp(n: anytype, l: anytype) void {
     const t = l.*;
           l.* = n.*;
           n.* = t;
 }
 
+// Sort array //
 pub fn sort(d: anytype) void {
 
     mem.sort(u64, d.*, {}, comptime std.sort.asc(u64));
 }
 
+// Sort array of 2d coords //
 pub fn sort2(d: anytype) void {
 
     mem.sort([2]u64, d.*, {}, comptime cmp0([2]u64));
 }
 
+// Check if inside interval pairs, 1d //
 pub fn wal(l: anytype, z: anytype) !bool {
 
     for (l) |k| {
@@ -1006,6 +958,7 @@ pub fn wal(l: anytype, z: anytype) !bool {
     return false;
 }
 
+// Sum over slice, uint //
 pub fn sum(l: anytype) u64 {
 
     var r: u64 = 0;
@@ -1017,6 +970,7 @@ pub fn sum(l: anytype) u64 {
     return r;
 }
 
+// Print coordinates, stored in Hash keys, 2d //
 pub fn phk(comptime l: anytype, a: anytype) void {
 
     if (!dbg.*) return;
@@ -1032,7 +986,8 @@ pub fn phk(comptime l: anytype, a: anytype) void {
     prl();
 }
 
-pub fn pra(a: anytype) void {
+// Print 2D array, using display function //
+pub fn pra(a: anytype, dis: anytype) void {
 
     if (!dbg.*) return;
 
@@ -1052,8 +1007,8 @@ pub fn pra(a: anytype) void {
 
             _ = j;
 
-            dpr("{any}", l);
-//            dpr("{c}", .{dis(l)});
+//            dpr("{any}", l);
+            dpr("{c}", .{dis(l)});
         }
 
         prl();
@@ -1062,6 +1017,7 @@ pub fn pra(a: anytype) void {
     prl();
 }
 
+// Line collision detection, 1l x 1l, 3d //
 pub fn col(
     x: anytype,
     y: anytype,
@@ -1107,10 +1063,6 @@ pub fn col(
 
     for (n[d] .. x.v+1) |a| {
 
-//        if (a % 10000 == 0) deb("a", a);
-
-//        const e, const f = try oth(d);
-
         z[d] = a;
 
         if (try cll(y, z, g)) return true;
@@ -1119,6 +1071,7 @@ pub fn col(
     return false;
 }
 
+// Line collision detection, 1p x 1l, 3d //
 pub fn cll(
     y: anytype,
     n: anytype,
@@ -1130,16 +1083,14 @@ pub fn cll(
 
     const e, const f = try oth(g);
 
-    // o <- y //
     const r = (n[e] == o[e] and n[f] == o[f] and o[g] <= n[g] and n[g] <= y.v);
-
-//    if (r or w) deb("cll", .{n, o, y.d, y.v, r});
 
     _ = w;
     
     return r;
 }
 
+// Get maximum of the 2 values //
 pub fn max(
     i: anytype,
     j: anytype,
@@ -1149,6 +1100,7 @@ pub fn max(
     return if (i >= j) i else j;
 }
 
+// Get other 1d coords to the supplied one, uint //
 pub fn oth(
     i: anytype,
 
@@ -1162,6 +1114,7 @@ pub fn oth(
     };
 }
 
+// Duplicate static array, copy contents manually // 
 pub fn dup(
     i: anytype,
 
@@ -1178,6 +1131,7 @@ pub fn dup(
     return n;
 }
 
+// One move = iteration on 2d field, 2dir, uint //
 fn itr(
     i: anytype,
     x: anytype,
@@ -1198,9 +1152,29 @@ fn itr(
     return false;
 }
 
+// Copy keys by iterating to array //
+fn cop(
+    q: anytype,
+    e: anytype,
+
+) void {
+    
+    var y = e.keyIterator();
+
+    var i: usize = 0;
+
+    while (y.next()) |z| {
+        defer i += 1;
+
+//    for (e, 0..) |z, i| {
+
+        q[i] = z.*;
+    }
+}
+
 
 // Copied & modified
-// std/sort.zig
+// std/sort.zig - order by first value in array only //
 pub fn cmp0(comptime T: type) fn (void, T, T) bool {
     return struct {
         pub fn inner(_: void, a: T, b: T) bool {
