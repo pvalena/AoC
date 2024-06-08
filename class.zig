@@ -854,16 +854,14 @@ pub fn pir(comptime T: anytype, i: anytype, j: anytype) [2]T {
 pub fn num(t: anytype, v: anytype) !t {
     var n: t = undefined;
 
-    if (v[0] >= '0' and v[0] <= '9') {
-        n = fmt.parseUnsigned(t, v, 10) catch |e| {
-            err("Invalid int", v) catch {};
+    n = fmt.parseUnsigned(t, v, 10) catch |e| {
 
-            return e;
-        };
-    } else {
+        puts("num", v);
 
-        return error.num;
-    }
+        err("Invalid int", v) catch {};
+
+        return e;
+    };
 
     return n;
 }
@@ -872,6 +870,9 @@ pub fn num(t: anytype, v: anytype) !t {
 pub fn nus(t: anytype, v: anytype) !t {
 
     const n = fmt.parseInt(t, v, 10) catch |e| {
+
+        puts("nus", v);
+
         err("Invalid int", v) catch {};
 
         return e;
