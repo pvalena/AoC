@@ -70,7 +70,7 @@ pub fn err(comptime l: anytype, d: anytype) !void {
     prl();
     deb(s, d);
 
-    prs("\n");
+    prl();
 
     return error.err;
 }
@@ -108,7 +108,7 @@ pub fn ini(al: anytype, tf: anytype, np: *u64) ![]u8 {
         np.* = try num(u64, n);
     }
 
-    prs("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
+    prs("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 
     return d;
 }
@@ -131,12 +131,12 @@ pub fn lin(comptime l: anytype, i: anytype) void {
     if (l.len < 3) {
         const k = 3 - l.len;
 
-        for (0..k) |_| prs(" ");
+        for (0..k) |_| dpr(" ", .{});
     }
-    prs(l ++ ": ");
+    dpr(l ++ ": ", .{});
 
     for (0..i) |_| {
-        prs(" ");
+        dpr(" ", .{});
     }
 
     dpr("^ {}\n", .{i});
@@ -149,9 +149,9 @@ pub fn out(comptime l: anytype, f: anytype, s: ?[]u64, c: anytype) void {
     if (l.len < 3) {
         const k = 3 - l.len;
 
-        for (0..k) |_| prs(" ");
+        for (0..k) |_| dpr(" ", .{});
     }
-    prs(l ++ ": ");
+    dpr(l ++ ": ", .{});
 
     for (f.items) |t| {
 
@@ -161,13 +161,13 @@ pub fn out(comptime l: anytype, f: anytype, s: ?[]u64, c: anytype) void {
     }
 
     if (s) |ss| {
-        prs(" <- ");
+        dpr(" <- ", .{});
 
         for (ss) |v| {
             dpr("{} ", .{v});
         }
     }
-    prs("\n");
+    prl();
 }
 
 // Print 2D Array using `out`
@@ -189,7 +189,7 @@ pub fn out2(comptime l: anytype, d: anytype, s: anytype, c: anytype) void {
 
     }
 
-    prs("\n");
+    prl();
 }
 
 pub fn eut(comptime l: anytype, f: anytype, s: ?[]u64,
@@ -219,13 +219,11 @@ pub fn dpr(comptime f: anytype, s: anytype) void {
 pub fn prs(comptime f: anytype) void {
     if (!dbg) return;
 
-    debug.print(f, .{});
+    debug.print(f ++ "\n", .{});
 }
 
 pub fn prl() void {
-    if (!dbg) return;
-
-    prs("\n");
+    dpr("\n", .{});
 }
 
 pub fn pr(comptime f: anytype, s: anytype) void {
@@ -571,9 +569,9 @@ pub fn gen2S(comptime T: anytype) type {
 }
 
 // Generic coords-based Hash => T, 1d //
-pub fn genK(comptime H: anytype, comptime D: anytype, comptime T: anytype) type {
+pub fn genK(comptime H: anytype, comptime D: anytype, comptime K: anytype, comptime T: anytype) type {
 
-    const Q = [D]u64;
+    const Q = [D]K;
 
     const A = H(Q, T);
 
@@ -584,7 +582,7 @@ pub fn genK(comptime H: anytype, comptime D: anytype, comptime T: anytype) type 
 
     return struct {
         a: A,
-        b: Q,
+        b: [2]Q,
 
         l: mem.Allocator,
 
@@ -596,11 +594,13 @@ pub fn genK(comptime H: anytype, comptime D: anytype, comptime T: anytype) type 
 
             c.a = A.init(l);
 
-            c.b = switch (D) {
+            const t = switch (D) {
                     2 => .{0, 0},
                     3 => .{0, 0, 0},
                     else => return error.init,
                 };
+
+            c.b = .{t, t};
                     
             c.l = l;
 
@@ -619,7 +619,7 @@ pub fn genK(comptime H: anytype, comptime D: anytype, comptime T: anytype) type 
             return c;
         }
 
-        pub fn count(c: anytype) u64 {
+        pub fn count(c: anytype) usize {
 
             return c.a.count();
         }
@@ -629,16 +629,79 @@ pub fn genK(comptime H: anytype, comptime D: anytype, comptime T: anytype) type 
             c.a.clearRetainingCapacity();
         }
 
-        pub fn add(c: anytype, k: anytype, v: anytype) !void {
+        pub fn add(c: anytype, k: Q, v: T) !void {
+
+            c.bor(k);
+
+            try c.a.put(k, v);
+        }
+
+        pub fn put(c: anytype, k: Q) !void {
+
+            c.bor(k);
+
+            try c.a.put(k, {});
+        }
+
+        pub fn bor(c: anytype, k: anytype) void {
 
             for (0 .. D) |i| {
 
-                if (k[i] > c.b[i]) {
-                    c.b[i] = k[i];
+                if (k[i] > c.b[i][1]) {
+                    c.b[i][1] = k[i];
+                }
+
+                if (k[i] < c.b[i][0]) {
+                    c.b[i][0] = k[i];
                 }
             }
+        }
 
-            try c.a.put(k, v);
+        pub fn prd(c: anytype, dis: anytype) void {
+
+            if (!dbg) return;
+
+            prl();
+
+            var i = c.b[0][0];
+
+            while (i <= c.b[0][1]) : (i += 1) {
+
+                dpr("   ", .{});
+
+                var j = c.b[1][0];
+
+                while (j <= c.b[1][1]) : (j += 1) {
+
+                    const k = .{i, j};
+
+                    const v = try c.getn(k);
+
+//                    if (v) |d|
+//                        deb("k", .{k, d});
+
+                    dpr("{c}", .{dis(v)});
+                }
+
+                prl();
+            }
+
+            prl();
+        }
+  
+        pub fn prk(c: anytype) void {
+
+            if (!dbg) return;
+
+//            dpr("\n" ++ l ++ "[k]: ", .{});
+
+            var k = c.a.keyIterator();
+
+            while (k.next()) |v| {
+                dpr("[{}, {}] ", .{v[0], v[1]});
+            }
+
+            prl();
         }
 
         pub fn remove(c: anytype, k: anytype) !void {
@@ -693,6 +756,148 @@ pub fn genK(comptime H: anytype, comptime D: anytype, comptime T: anytype) type 
         pub fn deinit(c: anytype) void {
 
             c.a.deinit();
+        }
+    };
+}
+
+// Generic Hash-Queue => T, 1d //
+pub fn genQ(comptime Q: anytype, comptime T: anytype) type {
+
+    const A = HashArray(Q, T);
+
+    const KV = struct {
+        Q,
+        T 
+    };
+
+    return struct {
+        a: A,
+        b: A,
+
+        s: u64,
+
+        d: ?*const fn(Q, T)void,
+
+        l: mem.Allocator,
+
+        pub fn init(l: anytype, d: anytype) !@This() {
+
+            var c: @This() = undefined;
+
+            c.a = A.init(l);
+            c.b = A.init(l);
+
+            c.d = d;
+            c.l = l;
+
+            c.s = 0;
+
+            return c;
+        }
+
+        pub fn clone(o: anytype) !@This() {
+
+            var c: @This() = undefined;
+
+            c.a = try o.a.clone();
+            c.b = try o.b.clone();
+
+            c.l = o.l;
+            c.d = o.d;
+            c.s = o.s;
+
+            return c;
+        }
+
+        pub fn count(c: anytype) usize {
+
+            return c.a.count() + c.b.count();
+        }
+
+        pub fn clear(c: anytype) void {
+
+            c.a.clearRetainingCapacity();
+            c.b.clearRetainingCapacity();
+        }
+
+        pub fn add(c: anytype, k: Q, v: T) !void {
+
+            try c.b.put(k, v);
+        }
+
+        pub fn put(c: anytype, k: Q) !void {
+
+            try c.b.put(k, {});
+        }
+
+        pub fn remove(c: anytype, k: anytype) !void {
+
+            if (c.a.swapRemove(k)) return;
+            if (c.b.swapRemove(k)) return;
+
+            try err("C.remove", k);
+        }
+
+        pub fn get(c: anytype, k: Q) !T {
+
+            return c.a.get(k) orelse {
+                return c.b.get(k) orelse return error.dataMissing;
+            };
+        }
+
+        pub fn getn(c: anytype, k: Q) !?T {
+
+            return c.a.get(k) orelse c.b.get(k);
+        }
+
+        pub fn contains(c: anytype, k: anytype) bool {
+
+            return (c.a.contains(k) or c.b.contains(k));
+        }
+
+        pub fn next(c: anytype) ?KV {
+
+            if (c.a.count() > 0) return c.pop(&c.a);
+
+            if (c.b.count() <= 0) return null;
+
+            swp(&c.a, &c.b);
+
+            c.s += 1;
+
+            return c.next();
+        }
+
+        pub fn steps(c: anytype) u64 {
+
+            return c.s;
+        }
+
+        pub fn deinit(c: anytype) void {
+
+            if (c.d) |d| {
+
+                while (c.next()) |w| {
+
+                    const k, const v = w;
+
+                    d(k, v);
+                }
+            }
+
+            c.a.deinit();
+            c.b.deinit();
+        }
+
+        ///
+
+        fn pop(_: anytype, a: anytype) ?KV {
+
+            const e = a.popOrNull();
+
+            if (e) |k| return .{k.key, k.value};
+
+            return null;
         }
     };
 }
@@ -972,16 +1177,17 @@ pub fn sum(l: anytype) u64 {
 }
 
 // Print coordinates, stored in Hash keys, 2d //
-pub fn phk(comptime l: anytype, a: anytype) void {
+pub fn prk(comptime l: anytype, a: anytype) void {
 
-    if (!dbg.*) return;
+    if (!dbg) return;
 
-    prs("\n" ++ l ++ "[k]: ");
+    dpr("\n" ++ l ++ "[k]: ", .{});
 
     var k = a.keyIterator();
 
     while (k.next()) |v| {
-        dpr("[{}, {}] ", .{v[0], v[1]});
+//        dpr("[{}, {}] ", .{v[0], v[1]});
+        dpr("[{}, {}] ", v);
     }
 
     prl();
@@ -990,7 +1196,7 @@ pub fn phk(comptime l: anytype, a: anytype) void {
 // Print 2D array, using display function //
 pub fn pra(a: anytype, dis: anytype) void {
 
-    if (!dbg.*) return;
+    if (!dbg) return;
 
     prl();
 
@@ -1002,7 +1208,7 @@ pub fn pra(a: anytype, dis: anytype) void {
     
         if (r.len <= 0) continue;
     
-        prs("   ");
+        dpr("   ", .{});
 
         for (r, 0..) |l, j| {
 
@@ -1017,6 +1223,7 @@ pub fn pra(a: anytype, dis: anytype) void {
 
     prl();
 }
+
 
 // Line collision detection, 1l x 1l, 3d //
 pub fn col(
