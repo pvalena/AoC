@@ -568,8 +568,68 @@ pub fn gen2S(comptime T: anytype) type {
     };
 }
 
+
+// Generic Queue //
+pub fn que(B: anytype) type {
+
+    const A = genQ(B, void);
+
+    const D = struct {
+        pub fn d(c: B, _: void) void {
+            c.deinit();
+        }
+    }.d;
+
+    return struct {
+
+        q: A,
+
+        pub fn init(a: anytype) !@This() {
+
+            var c: @This() = undefined;
+
+            c.q = try A.init(a, D);
+
+            return c;
+        }
+
+        pub fn deinit(c: anytype) void {
+
+            c.q.deinit();
+        }
+
+        pub fn put(c: anytype, v: anytype) !void {
+
+            try c.q.put(v);
+        }
+
+        pub fn count(c: anytype) usize {
+
+            return c.q.count();
+        }
+
+        pub fn next(c: anytype) ?B {
+
+            prs("next: ");
+
+            const g = c.q.next();
+
+            deb("g", g);
+
+            if (g) |v| {
+                const w, _ = v;
+
+                return w;
+            }
+
+            return null;
+        }
+    };
+}
+
+
 // Generic coords-based Hash => T, 1d //
-pub fn genK(comptime H: anytype, comptime D: anytype, comptime K: anytype, comptime T: anytype) type {
+pub fn genK(H: anytype, D: anytype, K: anytype, T: anytype) type {
 
     const Q = [D]K;
 
@@ -594,14 +654,10 @@ pub fn genK(comptime H: anytype, comptime D: anytype, comptime K: anytype, compt
 
             c.a = A.init(l);
 
-            const t = switch (D) {
-                    2 => .{0, 0},
-                    3 => .{0, 0, 0},
-                    else => return error.init,
-                };
+            for (0..D) |i| c.b[0][i] = 0;
 
-            c.b = .{t, t};
-                    
+            c.b[1] = c.b[0];
+
             c.l = l;
 
             return c;
@@ -755,7 +811,9 @@ pub fn genK(comptime H: anytype, comptime D: anytype, comptime K: anytype, compt
 
         pub fn deinit(c: anytype) void {
 
-            c.a.deinit();
+            var a = c.a;
+
+            a.deinit();
         }
     };
 }
