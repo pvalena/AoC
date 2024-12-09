@@ -123,11 +123,11 @@ while :; do
   ${tme} ${ta} zig run $aa $f -- "data${n}.txt" $D | tee "$l" && {
     R=$?
     { set +x ; } &>/dev/null
-    echo "SUCCESS: $R"
+#    echo "SUCCESS: $R"
   } || {
     R=$?
     { set +x ; } &>/dev/null
-    echo "FAIL: $R"
+#    echo "FAIL: $R"
   }
 
   [[ -n "$O" ]] && exit $R

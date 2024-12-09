@@ -902,6 +902,116 @@ pub fn genQ(comptime Q: anytype, comptime T: anytype) type {
     };
 }
 
+// Generic Duo-thing, 1d //
+pub fn genD(A: anytype, K: anytype) type {
+
+    return struct {
+        l: A,
+        r: A,
+
+        pub fn init(a: anytype) !@This() {
+
+            var c: @This() = undefined;
+
+            c.l = A.init(a);
+            c.r = A.init(a);
+
+            return c;
+        }
+
+        pub fn add(c: anytype, i: anytype, v: anytype) !void {
+
+            assert(i <= 2);
+
+            if (i < 1) {
+                try c.l.append(v);
+                return;
+            }
+
+            try c.r.append(v);
+        }
+
+        pub fn srt(c: anytype) void {
+
+            sort(&c.l.items, K);
+            sort(&c.r.items, K);
+        }
+
+        pub fn inc(c: anytype, l: anytype, r: anytype) !void {
+
+            const ll = c.l.get(l) orelse 0;
+            const rr = c.r.get(r) orelse 0;
+
+            try c.set(l, ll+1, r, rr+1);
+        }
+
+        pub fn set(c: anytype, l: anytype, v: anytype, r: anytype, w: anytype) !void {
+            try c.l.put(l, v);
+            try c.r.put(r, w);
+        }
+
+        pub fn any(c: anytype) bool {
+
+            return c.len() > 0;
+        }
+
+        pub fn len(c: anytype) usize {
+
+            const l = c.l.items;
+            const r = c.r.items;
+
+            assert(l.len == r.len);
+
+            return l.len;
+        }
+
+        pub fn itm(c: anytype, n: anytype) ![2]K {
+
+            return c.itm2(n, n);
+        }
+
+        pub fn itm2(c: anytype, n: anytype, m: anytype) ![2]K {
+            var z: [2]K = undefined;
+
+            z[0] = c.l.items[n];
+            z[1] = c.r.items[m];
+
+            return z;
+        }
+
+        pub fn get(c: anytype, n: anytype) ![2]K {
+
+            return c.get2(n, n);
+        }
+
+        pub fn get2(c: anytype, n: anytype, m: anytype) ![2]K {
+            var z: [2]K = undefined;
+
+            z[0] = c.l.get(n) orelse return error.dataMissing;
+            z[1] = c.r.get(m) orelse return error.dataMissing;
+
+            return z;
+        }
+
+        pub fn pop(c: anytype) ![2]K {
+            var z: [2]K = undefined;
+
+            assert(c.any());
+
+            z[0] = c.l.pop();
+            z[1] = c.r.pop();
+
+            return z;
+        }
+
+        pub fn deinit(c: anytype) void {
+
+            c.l.deinit();
+            c.r.deinit();    
+        }
+    };
+}
+
 // Generic Hash => Hash => void, 2d // 
 pub fn genH(comptime T: anytype) type {
 
