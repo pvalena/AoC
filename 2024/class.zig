@@ -93,9 +93,7 @@ pub fn ini(al: anytype, tf: anytype, np: *u64) ![]u8 {
     
     const f = args.next() orelse tf;
 
-    if (f.len == 0) {
-        try err("Missing Arg: Filename", null);
-    }
+    if (f.len == 0) try err("Missing Arg 'Filename'", .{});
 
     const d = try std.fs.cwd().readFileAlloc(al, f, std.math.maxInt(usize));
 
