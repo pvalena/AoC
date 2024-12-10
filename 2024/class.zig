@@ -1199,7 +1199,12 @@ pub fn spl(d: anytype, s: anytype) mem.SplitIterator(u8, .any) {
     return mem.splitAny(u8, d, s);
 }
 
-// Compare 2d arrays //
+// Split int array into slices //
+pub fn spls(d: anytype, s: anytype) mem.SplitIterator(u8, .sequence) {
+    return mem.split(u8, d, s);
+}
+
+// Compare strings //
 pub fn eql(d: anytype, s: anytype) bool {
     return mem.eql(u8, d, s);
 }
@@ -1273,9 +1278,9 @@ pub fn wal(l: anytype, z: anytype) !bool {
 }
 
 // Sum over slice, uint //
-pub fn sum(l: anytype) u64 {
+pub fn sum(l: anytype, T: anytype) T {
 
-    var r: u64 = 0;
+    var r: T = 0;
 
     for (l) |v| {
         r += v;
