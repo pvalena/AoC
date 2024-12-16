@@ -696,6 +696,7 @@ pub fn genK(comptime H: anytype, comptime D: anytype, comptime K: anytype, compt
             var k = c.a.keyIterator();
 
             while (k.next()) |v| {
+
                 dpr("[{}, {}] ", .{v[0], v[1]});
             }
 
@@ -1209,9 +1210,34 @@ pub fn eql(d: anytype, s: anytype) bool {
     return mem.eql(u8, d, s);
 }
 
+// Does the end of l match the s //
+fn mat(
+    l: anytype,
+    s: anytype,
+
+) bool {
+
+    if (l.len < s.len) return false;
+
+    const b = l.len - s.len;
+
+    const n = l[b..];
+    
+    const r = eql(n, s);
+
+//    deb("mat", r);
+
+    return r;
+} 
+
 // Compare 2d coords //
 pub fn eq2(d: anytype, s: anytype) bool {
     return d[0] == s[0] and d[1] == s[1];
+}
+
+// Add 2d coords //
+pub fn nex(d: anytype, s: anytype) @TypeOf(d) {
+    return .{d[0] + s[0], d[1] + s[1]};
 }
 
 // Find index in array, use `eql` function //
