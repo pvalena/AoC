@@ -655,7 +655,7 @@ pub fn genK(comptime H: anytype, comptime D: anytype, comptime K: anytype, compt
             }
         }
 
-        pub fn prd(c: anytype, dis: anytype) void {
+        pub fn prd(c: anytype, W: anytype) void {
 
             if (!dbg) return;
 
@@ -673,12 +673,12 @@ pub fn genK(comptime H: anytype, comptime D: anytype, comptime K: anytype, compt
 
                     const k = .{i, j};
 
-                    const v = try c.getn(k);
+                    const v = c.getn(k);
 
 //                    if (v) |d|
 //                        deb("k", .{k, d});
 
-                    dpr("{c}", .{dis(v)});
+                    dpr("{c}", .{sho(v, W)});
                 }
 
                 prl();
@@ -725,7 +725,7 @@ pub fn genK(comptime H: anytype, comptime D: anytype, comptime K: anytype, compt
             return c.a.get(k) orelse return error.dataMissing;
         }
 
-        pub fn getn(c: anytype, k: Q) !?T {
+        pub fn getn(c: anytype, k: Q) ?T {
 
             return c.a.get(k);
         }
@@ -1482,6 +1482,67 @@ pub fn dup(
 
     return n;
 }
+
+pub fn vl2(l: anytype, p: anytype, K: anytype) ![2]K {
+
+    var s = spl(l, p);
+    var w: K = -1;
+
+    while (s.next()) |x| {
+
+        const v = try nus(x, K);
+
+        if (v < 0) try err("vl2", v);
+
+        if (w != -1) return .{w, v};
+
+        w = v;
+    }
+
+    return error.val;
+}
+
+pub fn vll(c: anytype, l: anytype, p: anytype, K: anytype) !void {
+
+    var s = spl(l, p);
+
+    var i: K = 0;
+
+    while (s.next()) |x| {
+
+        i += 1;
+
+        const v = try nus(x, K);
+
+        try c.*.add(v);
+    }
+
+    if (i > 0) try c.*.new();
+}
+
+pub fn dec(v: anytype, W: anytype, S: anytype) !S {
+
+    for (W, 0..) |w, i| {
+
+        if (v == w) return @enumFromInt(i);
+    }
+
+    return @enumFromInt(0);
+}
+
+pub fn sho(g: anytype, W: anytype) u8 {
+
+    if (g) |i| {
+
+        const v = @intFromEnum(i);
+
+        assert(v < W.len);
+
+        return W[v];
+
+    } else return ' ';
+}
+
 
 // One move = iteration on 2d field, 2dir, uint //
 fn itr(
