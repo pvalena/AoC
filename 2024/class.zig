@@ -1092,6 +1092,11 @@ pub fn genH(comptime T: anytype) type {
             return sl.d.get(p) orelse return error.dataMissing;
         }
 
+        pub fn getn(sl: anytype, p: anytype) ?N {
+
+            return sl.d.get(p);
+        }
+
         pub fn remove(s: anytype, x: anytype, v: anytype) !void {
 
             var l = try s.get(x);
@@ -1181,7 +1186,7 @@ pub fn num(t: anytype, v: anytype) !t {
 }
 
 // Parse int //
-pub fn nus(t: anytype, v: anytype) !t {
+pub fn nus(v: anytype, t: anytype) !t {
 
     const n = fmt.parseInt(t, v, 10) catch |e| {
 
