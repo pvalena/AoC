@@ -52,6 +52,7 @@ const S = enum {
     M,
     D,
     O,
+    U
 };
 fn dec(v: usize) !S {
     return @enumFromInt(v);
@@ -90,14 +91,11 @@ fn mat(
     
     const r = eql(n, s);
 
-    deb("mat", r);
-
     return r;
 }
 
 fn fin(
     l: anytype,
-    o: anytype,
 
 ) !S {
 
@@ -107,9 +105,7 @@ fn fin(
 
     if (mat(l, "mul")) return S.M;
 
-    try err("N", null);
-
-    return o;
+    return S.U;
 }
 
 
@@ -127,11 +123,13 @@ fn par(a: anytype, d: []u8) !C {
     while (ls.next()) |l| {
         defer i += 1;
 
+        prl();
         puts("l", l);
 
         if (i <= 0) {
-            s = try fin(l, s);
 
+            s = try fin(l);
+            deb("s", s);
             continue;
         }  
 
@@ -147,13 +145,35 @@ fn par(a: anytype, d: []u8) !C {
             while (x.next()) |y| {
                 defer k += 1;
 
-                if (k > 1) {
+                if (s == S.M and (k > 1 or e == false)) {
 
                     f = 0;
                     break;
                 }
 
-                if (y.len <= 0) try err("y", y);
+                if (s == S.O or s == S.D) {
+
+                    if (k > 0) {
+
+                        f = 0;
+                        break;
+                    }
+
+                    if (y.len <= 0) {
+
+                        f = 1;
+                        continue;
+                    }
+    
+                    f = 0;
+                    break;
+                }
+
+                if (! (e and s == S.M) ) {
+
+                    f = 0;
+                    break;
+                }
 
                 const n = fmt.parseInt(K, y, 10) catch {
 
@@ -166,21 +186,31 @@ fn par(a: anytype, d: []u8) !C {
                 f *= n;
             }
 
-            if (f > 0) {
+            deb("s e f", .{s, e, f});
+
+            if ((s == S.O or s == S.D) and f != 0) {
+
+                deb("swi", .{s, f});
+
+                _ = switch(s) {
+
+                    S.D => { e = true;  },
+                    S.O => { e = false; },
+
+                    else => try err("swi", f)
+                };
+            }
+
+            if (e and s == S.M and f > 0) {
                 puts("v", v);
 
                 try c.add(f);
             }
 
+            s = try fin(l);
+            deb("s", s);
             break;
         }
-
-        try err("l", l);
-
-        e = true;
-        s = try fin(l, s);
-
-        try wip();
     }
 
     return c;
